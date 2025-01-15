@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.9
+    Environment:
+      Variables:
+        SCHEDULE_TABLE: !Ref ProductionScheduleTable
+
+Resources:
+  GetScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda_functions/production_schedule/get_schedule/
+      Handler: app.lambda_handler
+      Events:
+        GetSchedule:
+          Type: Api
+          Properties:
+            Path: /schedule/{date}
+            Method: get
+
+  UpdateScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda_functions/production_schedule/update_schedule/
+      Handler: app.lambda_handler
+      Events:
+        UpdateSchedule:
+          Type: Api
+          Properties:
+            Path: /schedule
+            Method: post
+
+  ProductionScheduleTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: production-schedule
+      AttributeDefinitions:
+        - AttributeName: date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: date
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/" 

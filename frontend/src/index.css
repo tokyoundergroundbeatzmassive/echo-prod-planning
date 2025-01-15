@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 必要に応じてカスタムスタイルを追加 */
+body {
+    @apply bg-gray-50;
+}
+
+/* contentEditableの枠線を制御 */
+[contenteditable]:focus {
+    @apply outline-none ring-2 ring-blue-500 ring-opacity-50;
+}
