@@ -34,45 +34,79 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         try {
             setIsSaving(true);
 
-            // 現在の日付をyyyymmdd形式で取得
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
+            // 選択された日付をyyyymmdd形式で取得
+            const date = selectedDate;
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateStr = `${year}${month}${day}`;
 
-            // デバッグ用に全ての値を表示
-            console.log('全ての受注番号:', orderNumbers);
-            console.log('全ての製品名:', productNames);
+            // 全ての行のデータを保存
+            for (const rowNum of Object.keys(orderNumbers)) {
+                const orderNumber = orderNumbers[rowNum];
+                if (!orderNumber) continue; // 空の行はスキップ
 
-            // 1行目の受注番号を取得
-            const firstRowOrderNumber = orderNumbers[1];
-            console.log('1行目の受注番号:', firstRowOrderNumber);
+                // 受注番号に選択された日付を付与
+                const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
 
-            const uniqueOrderNumber = firstRowOrderNumber || 'NO_NUMBER';
-
-            const result = await client.graphql({
-                query: `
-                    mutation CreateEchoProdManagement($input: CreateEchoProdManagementInput!) {
-                        createEchoProdManagement(input: $input) {
-                            orderNumber
-                            deadline
-                            processOptions
+                try {
+                    // まず更新を試みる
+                    const updateResult = await client.graphql({
+                        query: `
+                            mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
+                                updateEchoProdManagement(input: $input) {
+                                    orderNumber
+                                    deadline
+                                    processOptions
+                                }
+                            }
+                        `,
+                        variables: {
+                            input: {
+                                orderNumber: uniqueOrderNumber,
+                                deadline: "20250303",
+                                processOptions: "スーパーカッター"
+                            }
                         }
-                    }
-                `,
-                variables: {
-                    input: {
-                        orderNumber: uniqueOrderNumber,
-                        deadline: "20250303",
-                        processOptions: "ラミネート"
+                    });
+
+                    console.log(`行 ${rowNum} の更新結果:`, updateResult);
+                } catch (updateError) {
+                    console.log('更新に失敗、新規作成を試みます:', updateError);
+
+                    try {
+                        // 更新に失敗した場合は新規作成を試みる
+                        const createResult = await client.graphql({
+                            query: `
+                                mutation CreateEchoProdManagement($input: CreateEchoProdManagementInput!) {
+                                    createEchoProdManagement(input: $input) {
+                                        orderNumber
+                                        deadline
+                                        processOptions
+                                    }
+                                }
+                            `,
+                            variables: {
+                                input: {
+                                    orderNumber: uniqueOrderNumber,
+                                    deadline: "20250303",
+                                    processOptions: "スーパーカッター"
+                                }
+                            }
+                        });
+
+                        console.log(`行 ${rowNum} の新規作成結果:`, createResult);
+                    } catch (createError) {
+                        console.error(`行 ${rowNum} の保存に失敗:`, createError);
+                        alert(`行 ${rowNum} の保存に失敗しました: ${createError.message}`);
                     }
                 }
-            });
-            console.log('保存結果:', result);
-            alert('保存しました');
+            }
+
+            alert('処理が完了しました');
         } catch (error: any) {
-            console.error('保存エラー詳細:', error);
-            alert('保存に失敗しました');
+            console.error('全体的なエラー:', error);
+            alert('処理中にエラーが発生しました');
         } finally {
             setIsSaving(false);
         }
