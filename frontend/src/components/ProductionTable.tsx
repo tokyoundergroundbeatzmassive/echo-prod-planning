@@ -11,6 +11,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
     // 状態として行数を管理
     const [rowCount, setRowCount] = useState(10);
     const [isSaving, setIsSaving] = useState(false);
+    const [productNames, setProductNames] = useState<{ [key: number]: string }>({}); // 行ごとの製品名を管理
+    const [orderNumbers, setOrderNumbers] = useState<{ [key: number]: string }>({}); // 受注番号用
     // rowCountを使用して動的に行を生成
     const rows = Array.from({ length: rowCount }, (_, i) => i + 1);
     const processOptions = [
@@ -38,7 +40,15 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
 
-            const uniqueOrderNumber = `ORDER-${year}${month}${day}`;
+            // デバッグ用に全ての値を表示
+            console.log('全ての受注番号:', orderNumbers);
+            console.log('全ての製品名:', productNames);
+
+            // 1行目の受注番号を取得
+            const firstRowOrderNumber = orderNumbers[1];
+            console.log('1行目の受注番号:', firstRowOrderNumber);
+
+            const uniqueOrderNumber = firstRowOrderNumber || 'NO_NUMBER';
 
             const result = await client.graphql({
                 query: `
@@ -120,10 +130,36 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                                 )}
                                 {rowNum}
                             </td>
-                            {Array.from({ length: 14 }, (_, i) => (
+                            <td
+                                className="border p-1"
+                                contentEditable={true}
+                                suppressContentEditableWarning={true}
+                                onBlur={(e) => {
+                                    const newValue = e.currentTarget.textContent || '';
+                                    setOrderNumbers(prev => ({
+                                        ...prev,
+                                        [rowNum]: newValue
+                                    }));
+                                    console.log('受注番号が更新されました:', rowNum, newValue);
+                                }}
+                            />
+                            <td
+                                className="border p-1"
+                                contentEditable={true}
+                                suppressContentEditableWarning={true}
+                                onBlur={(e) => {
+                                    const newValue = e.currentTarget.textContent || '';
+                                    setProductNames(prev => ({
+                                        ...prev,
+                                        [rowNum]: newValue
+                                    }));
+                                    console.log('製品名が更新されました:', rowNum, newValue);
+                                }}
+                            />
+                            {Array.from({ length: 11 }, (_, i) => (
                                 <td
                                     key={i}
-                                    className={`border p-1 min-w-[60px] ${i === 1 ? 'text-left' : 'text-right'} hover:bg-blue-50`}
+                                    className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
                                     contentEditable={true}
                                     suppressContentEditableWarning={true}
                                 />
