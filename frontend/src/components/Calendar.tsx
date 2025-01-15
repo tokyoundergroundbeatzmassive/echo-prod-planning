@@ -6,7 +6,11 @@ interface CalendarDate {
     date: number;
 }
 
-const Calendar: React.FC = () => {
+interface CalendarProps {
+    onDateSelect: (date: Date) => void;
+}
+
+const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
     const [currentDate, setCurrentDate] = useState<CalendarDate>(() => {
         const today = new Date();
         return {
@@ -85,6 +89,7 @@ const Calendar: React.FC = () => {
     const handleDateSelect = (date: number) => {
         const newDate = new Date(currentDate.year, currentDate.month, date);
         setSelectedDate(newDate);
+        onDateSelect(newDate);
         setIsOpen(false);
     };
 
