@@ -1,5 +1,5 @@
 import { generateClient } from 'aws-amplify/api';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AiOutlineMinusCircle, AiOutlinePlusCircle } from 'react-icons/ai';
 
 interface ProductionTableProps {
@@ -13,6 +13,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
     const [isSaving, setIsSaving] = useState(false);
     const [productNames, setProductNames] = useState<{ [key: number]: string }>({}); // 行ごとの製品名を管理
     const [orderNumbers, setOrderNumbers] = useState<{ [key: number]: string }>({}); // 受注番号用
+    const [selectedProcess, setSelectedProcess] = useState('ラミネート'); // 選択された工程を管理
+    const [deadlines, setDeadlines] = useState<{ [key: number]: string }>({}); // 納期用の状態を追加
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+    const [activeDeadlineRow, setActiveDeadlineRow] = useState<number | null>(null);
+    const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
+    const tableRef = useRef<HTMLDivElement>(null);
     // rowCountを使用して動的に行を生成
     const rows = Array.from({ length: rowCount }, (_, i) => i + 1);
     const processOptions = [
@@ -44,7 +50,14 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             // 全ての行のデータを保存
             for (const rowNum of Object.keys(orderNumbers)) {
                 const orderNumber = orderNumbers[rowNum];
-                if (!orderNumber) continue; // 空の行はスキップ
+                if (!orderNumber) continue;
+
+                const deadline = deadlines[rowNum];
+                // 納期が未入力の場合はエラー
+                if (!deadline) {
+                    alert(`行 ${rowNum} の納期が入力されていません`);
+                    return;
+                }
 
                 // 受注番号に選択された日付を付与
                 const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
@@ -64,8 +77,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         variables: {
                             input: {
                                 orderNumber: uniqueOrderNumber,
-                                deadline: "20250303",
-                                processOptions: "スーパーカッター"
+                                deadline: deadline,
+                                processOptions: selectedProcess
                             }
                         }
                     });
@@ -89,8 +102,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             variables: {
                                 input: {
                                     orderNumber: uniqueOrderNumber,
-                                    deadline: "20250303",
-                                    processOptions: "スーパーカッター"
+                                    deadline: deadline,
+                                    processOptions: selectedProcess
                                 }
                             }
                         });
@@ -112,13 +125,157 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         }
     };
 
+    // 納期用の日付選択ハンドラ
+    const handleDeadlineSelect = (date: Date, rowNum: number) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}${month}${day}`;
+
+        setDeadlines(prev => ({
+            ...prev,
+            [rowNum]: dateStr
+        }));
+        setIsCalendarOpen(false);
+        setActiveDeadlineRow(null);
+    };
+
+    // 日付選択用の簡易コンポーネントを作成
+    const DatePicker: React.FC<{
+        onDateSelect: (date: Date) => void;
+        onClose: () => void;
+    }> = ({ onDateSelect, onClose }) => {
+        const [currentDate, setCurrentDate] = useState(() => {
+            const today = new Date();
+            return {
+                year: today.getFullYear(),
+                month: today.getMonth()
+            };
+        });
+
+        const renderCalendar = () => {
+            const firstDay = new Date(currentDate.year, currentDate.month, 1);
+            const lastDay = new Date(currentDate.year, currentDate.month + 1, 0);
+            const days = [];
+
+            // 前月の日付を埋める
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                days.push(
+                    <div key={`empty-${i}`} className="text-center text-gray-400 p-1">
+                        -
+                    </div>
+                );
+            }
+
+            // 当月の日付を埋める
+            for (let date = 1; date <= lastDay.getDate(); date++) {
+                days.push(
+                    <div
+                        key={date}
+                        onClick={() => {
+                            onDateSelect(new Date(currentDate.year, currentDate.month, date));
+                            onClose();
+                        }}
+                        className="text-center p-1 cursor-pointer hover:bg-blue-100 rounded"
+                    >
+                        {date}
+                    </div>
+                );
+            }
+
+            return days;
+        };
+
+        return (
+            <div className="bg-white shadow-lg rounded-lg p-2 w-64">
+                <div className="flex justify-between items-center mb-2">
+                    <button
+                        onClick={() => setCurrentDate(prev => ({
+                            ...prev,
+                            month: prev.month - 1,
+                            year: prev.month === 0 ? prev.year - 1 : prev.year
+                        }))}
+                        className="px-2 hover:bg-gray-100 rounded"
+                    >
+                        ←
+                    </button>
+                    <span>{currentDate.year}年{currentDate.month + 1}月</span>
+                    <button
+                        onClick={() => setCurrentDate(prev => ({
+                            ...prev,
+                            month: prev.month + 1,
+                            year: prev.month === 11 ? prev.year + 1 : prev.year
+                        }))}
+                        className="px-2 hover:bg-gray-100 rounded"
+                    >
+                        →
+                    </button>
+                </div>
+                <div className="grid grid-cols-7 gap-1 text-sm">
+                    <div className="text-center text-red-500">日</div>
+                    <div className="text-center">月</div>
+                    <div className="text-center">火</div>
+                    <div className="text-center">水</div>
+                    <div className="text-center">木</div>
+                    <div className="text-center">金</div>
+                    <div className="text-center text-blue-500">土</div>
+                    {renderCalendar()}
+                </div>
+            </div>
+        );
+    };
+
+    // クリックイベントのハンドラーを追加
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (tableRef.current && !tableRef.current.contains(event.target as Node)) {
+                setIsCalendarOpen(false);
+                setActiveDeadlineRow(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    // テーブルセルのクリックハンドラー
+    const handleCellClick = (event: React.MouseEvent<HTMLTableDataCellElement>, rowNum: number, isDeadlineCell: boolean) => {
+        // 納期セル以外がクリックされた場合はカレンダーを閉じる
+        if (!isDeadlineCell) {
+            setIsCalendarOpen(false);
+            setActiveDeadlineRow(null);
+            return;
+        }
+
+        // 納期セルがクリックされた場合の処理
+        const cell = event.currentTarget;
+        const rect = cell.getBoundingClientRect();
+        const tableRect = tableRef.current?.getBoundingClientRect();
+
+        if (tableRect) {
+            setCalendarPosition({
+                top: rect.bottom - tableRect.top,
+                left: rect.left - tableRect.left
+            });
+        }
+
+        setIsCalendarOpen(true);
+        setActiveDeadlineRow(rowNum);
+    };
+
     return (
-        <div>
+        <div ref={tableRef} className="relative">
             <table className="w-full border-collapse text-sm">
                 <thead>
                     <tr>
                         <th colSpan={3} className="border bg-gray-100 p-1 font-normal">
-                            <select className="w-full bg-transparent font-bold text-blue-600" defaultValue="ラミネート">
+                            <select
+                                className="w-full bg-transparent font-bold text-blue-600"
+                                value={selectedProcess}
+                                onChange={(e) => setSelectedProcess(e.target.value)}
+                            >
                                 {processOptions.map(option => (
                                     <option key={option} value={option}>{option}</option>
                                 ))}
@@ -168,40 +325,67 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                                 className="border p-1"
                                 contentEditable={true}
                                 suppressContentEditableWarning={true}
+                                onClick={(e) => handleCellClick(e, rowNum, false)}
                                 onBlur={(e) => {
                                     const newValue = e.currentTarget.textContent || '';
                                     setOrderNumbers(prev => ({
                                         ...prev,
                                         [rowNum]: newValue
                                     }));
-                                    console.log('受注番号が更新されました:', rowNum, newValue);
                                 }}
                             />
                             <td
                                 className="border p-1"
                                 contentEditable={true}
                                 suppressContentEditableWarning={true}
+                                onClick={(e) => handleCellClick(e, rowNum, false)}
                                 onBlur={(e) => {
                                     const newValue = e.currentTarget.textContent || '';
                                     setProductNames(prev => ({
                                         ...prev,
                                         [rowNum]: newValue
                                     }));
-                                    console.log('製品名が更新されました:', rowNum, newValue);
                                 }}
                             />
-                            {Array.from({ length: 11 }, (_, i) => (
+                            {Array.from({ length: 10 }, (_, i) => (
                                 <td
                                     key={i}
                                     className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
                                     contentEditable={true}
                                     suppressContentEditableWarning={true}
+                                    onClick={(e) => handleCellClick(e, rowNum, false)}
                                 />
                             ))}
+                            <td
+                                className="border p-1 min-w-[60px] text-right hover:bg-blue-50 cursor-pointer"
+                                onClick={(e) => handleCellClick(e, rowNum, true)}
+                            >
+                                {deadlines[rowNum] ? formatDate(deadlines[rowNum]) : ''}
+                            </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
+
+            {/* カレンダーコンポーネント */}
+            {isCalendarOpen && activeDeadlineRow !== null && (
+                <div
+                    className="absolute z-50"
+                    style={{
+                        top: `${calendarPosition.top}px`,
+                        left: `${calendarPosition.left - 200}px`
+                    }}
+                >
+                    <DatePicker
+                        onDateSelect={(date) => handleDeadlineSelect(date, activeDeadlineRow)}
+                        onClose={() => {
+                            setIsCalendarOpen(false);
+                            setActiveDeadlineRow(null);
+                        }}
+                    />
+                </div>
+            )}
+
             <div className="mt-4 flex justify-start">
                 <button
                     onClick={handleSave}
@@ -214,5 +398,11 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         </div>
     );
 }
+
+// 日付フォーマット用のヘルパー関数
+const formatDate = (dateStr: string): string => {
+    if (dateStr.length !== 8) return dateStr;
+    return `${dateStr.slice(0, 4)}/${dateStr.slice(4, 6)}/${dateStr.slice(6, 8)}`;
+};
 
 export default ProductionTable;
