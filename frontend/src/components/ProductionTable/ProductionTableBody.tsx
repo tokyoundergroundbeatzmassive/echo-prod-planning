@@ -10,6 +10,8 @@ interface ProductionTableBodyProps {
     deadlines: { [key: number]: string };
     orderQuantities: { [key: number]: number };
     processPlanQuantities: { [key: number]: number };
+    processPlanTimes: { [key: number]: number };
+    processResultQuantities: { [key: number]: number };
     setOrderNumbers: (value: React.SetStateAction<{ [key: number]: string }>) => void;
     setProductNames: (value: React.SetStateAction<{ [key: number]: string }>) => void;
     handleCellClick: (event: React.MouseEvent<HTMLTableCellElement>, rowNum: number, isDeadlineCell: boolean) => void;
@@ -17,6 +19,8 @@ interface ProductionTableBodyProps {
     removeRow: () => void;
     setOrderQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
     setProcessPlanQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setProcessPlanTimes: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setProcessResultQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
 }
 
 export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
@@ -27,13 +31,17 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
     deadlines,
     orderQuantities,
     processPlanQuantities,
+    processPlanTimes,
+    processResultQuantities,
     setOrderNumbers,
     setProductNames,
     handleCellClick,
     addRow,
     removeRow,
     setOrderQuantities,
-    setProcessPlanQuantities
+    setProcessPlanQuantities,
+    setProcessPlanTimes,
+    setProcessResultQuantities
 }) => {
     return (
         <tbody>
@@ -112,7 +120,37 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                     >
                         {processPlanQuantities[rowNum]}
                     </td>
-                    {Array.from({ length: 8 }, (_, i) => (
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseFloat(content) || 0;
+                            setProcessPlanTimes(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {processPlanTimes[rowNum]}
+                    </td>
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseInt(content, 10) || 0;
+                            setProcessResultQuantities(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {processResultQuantities[rowNum]}
+                    </td>
+                    {Array.from({ length: 6 }, (_, i) => (
                         <td
                             key={i}
                             className="border p-1 min-w-[60px] text-right hover:bg-blue-50"

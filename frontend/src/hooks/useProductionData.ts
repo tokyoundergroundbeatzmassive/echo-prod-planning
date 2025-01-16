@@ -9,6 +9,8 @@ interface ProductionData {
     productName: string;
     orderQuantity: string;
     processPlanQuantity: number;
+    processPlanTime: number;
+    processResultQuantity: number;
     // 他のフィールドも必要に応じて追加
 }
 
@@ -47,6 +49,8 @@ export const useProductionData = (selectedDate: Date, processOptions: string = '
                                     productName
                                     orderQuantity
                                     processPlanQuantity
+                                    processPlanTime
+                                    processResultQuantity
                                 }
                             }
                         }

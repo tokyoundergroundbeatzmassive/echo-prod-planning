@@ -33,6 +33,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
     const tableRef = useRef<HTMLDivElement>(null);
     const [orderQuantities, setOrderQuantities] = useState<{ [key: number]: number }>({});
     const [processPlanQuantities, setProcessPlanQuantities] = useState<{ [key: number]: number }>({});
+    const [processPlanTimes, setProcessPlanTimes] = useState<{ [key: number]: number }>({});
+    const [processResultQuantities, setProcessResultQuantities] = useState<{ [key: number]: number }>({});
 
     // 工程オプション
     const processOptions = [
@@ -118,6 +120,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         const newProductNames: { [key: number]: string } = {};
         const newOrderQuantities: { [key: number]: number } = {};
         const newProcessPlanQuantities: { [key: number]: number } = {};
+        const newProcessPlanTimes: { [key: number]: number } = {};
+        const newProcessResultQuantities: { [key: number]: number } = {};
 
         productionData.forEach((item, index) => {
             const rowNum = index + 1;
@@ -127,6 +131,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             newProductNames[rowNum] = item.productName || '';
             newOrderQuantities[rowNum] = parseInt(item.orderQuantity, 10) || 0;
             newProcessPlanQuantities[rowNum] = Number(item.processPlanQuantity) || 0;
+            newProcessPlanTimes[rowNum] = Number(item.processPlanTime) || 0;
+            newProcessResultQuantities[rowNum] = Number(item.processResultQuantity) || 0;
         });
 
         setOrderNumbers(newOrderNumbers);
@@ -134,6 +140,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         setProductNames(newProductNames);
         setOrderQuantities(newOrderQuantities);
         setProcessPlanQuantities(newProcessPlanQuantities);
+        setProcessPlanTimes(newProcessPlanTimes);
+        setProcessResultQuantities(newProcessResultQuantities);
         setSelectedProcess(productionData[0]?.processOptions || 'ラミネート');
     }, [productionData]);
 
@@ -144,6 +152,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         setProductNames({});
         setOrderQuantities({});
         setProcessPlanQuantities({});
+        setProcessPlanTimes({});
+        setProcessResultQuantities({});
     }, [selectedDate]);
 
     const saveRowData = async (rowNum: string, dateStr: string) => {
@@ -159,6 +169,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         const productName = productNames[rowNum];
         const orderQuantity = orderQuantities[rowNum];
         const processPlanQuantity = processPlanQuantities[rowNum];
+        const processPlanTime = processPlanTimes[rowNum];
+        const processResultQuantity = processResultQuantities[rowNum];
 
         const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
 
@@ -173,6 +185,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             productName
                             orderQuantity
                             processPlanQuantity
+                            processPlanTime
+                            processResultQuantity
                         }
                     }
                 `,
@@ -183,7 +197,9 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         deadline: deadline,
                         productName: productName,
                         orderQuantity: orderQuantity,
-                        processPlanQuantity: processPlanQuantity
+                        processPlanQuantity: processPlanQuantity,
+                        processPlanTime: processPlanTime,
+                        processResultQuantity: processResultQuantity
                     }
                 }
             });
@@ -198,6 +214,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             productName
                             orderQuantity
                             processPlanQuantity
+                            processPlanTime
+                            processResultQuantity
                         }
                     }
                 `,
@@ -208,7 +226,9 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         deadline: deadline,
                         productName: productName,
                         orderQuantity: orderQuantity,
-                        processPlanQuantity: processPlanQuantity
+                        processPlanQuantity: processPlanQuantity,
+                        processPlanTime: processPlanTime,
+                        processResultQuantity: processResultQuantity
                     }
                 }
             });
@@ -235,10 +255,14 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                     deadlines={deadlines}
                     orderQuantities={orderQuantities}
                     processPlanQuantities={processPlanQuantities}
+                    processPlanTimes={processPlanTimes}
+                    processResultQuantities={processResultQuantities}
                     setOrderNumbers={setOrderNumbers}
                     setProductNames={setProductNames}
                     setOrderQuantities={setOrderQuantities}
                     setProcessPlanQuantities={setProcessPlanQuantities}
+                    setProcessPlanTimes={setProcessPlanTimes}
+                    setProcessResultQuantities={setProcessResultQuantities}
                     handleCellClick={handleCellClick}
                     addRow={addRow}
                     removeRow={removeRow}
