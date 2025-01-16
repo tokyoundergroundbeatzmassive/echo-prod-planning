@@ -1,19 +1,21 @@
 import { generateClient } from 'aws-amplify/api';
 import React, { useEffect, useRef, useState } from 'react';
 import { AiOutlineMinusCircle, AiOutlinePlusCircle } from 'react-icons/ai';
+import { useProductionData } from '../hooks/useProductionData';
 
 interface ProductionTableProps {
     selectedDate: Date;
 }
 
 const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
+    const [selectedProcess, setSelectedProcess] = useState('ラミネート');
+    const { productionData, isLoading, error } = useProductionData(selectedDate, selectedProcess);
     const client = generateClient();
     // 状態として行数を管理
     const [rowCount, setRowCount] = useState(10);
     const [isSaving, setIsSaving] = useState(false);
     const [productNames, setProductNames] = useState<{ [key: number]: string }>({}); // 行ごとの製品名を管理
     const [orderNumbers, setOrderNumbers] = useState<{ [key: number]: string }>({}); // 受注番号用
-    const [selectedProcess, setSelectedProcess] = useState('ラミネート'); // 選択された工程を管理
     const [deadlines, setDeadlines] = useState<{ [key: number]: string }>({}); // 納期用の状態を追加
     const [isCalendarOpen, setIsCalendarOpen] = useState(false);
     const [activeDeadlineRow, setActiveDeadlineRow] = useState<number | null>(null);
@@ -53,7 +55,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                 if (!orderNumber) continue;
 
                 const deadline = deadlines[rowNum];
-                // 納期が未入力の場合はエラー
+                const productName = productNames[rowNum];
+
                 if (!deadline) {
                     alert(`行 ${rowNum} の納期が入力されていません`);
                     return;
@@ -69,41 +72,43 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
                                 updateEchoProdManagement(input: $input) {
                                     orderNumber
-                                    deadline
                                     processOptions
+                                    deadline
+                                    productName
                                 }
                             }
                         `,
                         variables: {
                             input: {
                                 orderNumber: uniqueOrderNumber,
+                                processOptions: selectedProcess,
                                 deadline: deadline,
-                                processOptions: selectedProcess
+                                productName: productName
                             }
                         }
                     });
 
                     console.log(`行 ${rowNum} の更新結果:`, updateResult);
                 } catch (updateError) {
-                    console.log('更新に失敗、新規作成を試みます:', updateError);
-
+                    // 更新失敗時の新規作成処理
                     try {
-                        // 更新に失敗した場合は新規作成を試みる
                         const createResult = await client.graphql({
                             query: `
                                 mutation CreateEchoProdManagement($input: CreateEchoProdManagementInput!) {
                                     createEchoProdManagement(input: $input) {
                                         orderNumber
-                                        deadline
                                         processOptions
+                                        deadline
+                                        productName
                                     }
                                 }
                             `,
                             variables: {
                                 input: {
                                     orderNumber: uniqueOrderNumber,
+                                    processOptions: selectedProcess,
                                     deadline: deadline,
-                                    processOptions: selectedProcess
+                                    productName: productName
                                 }
                             }
                         });
@@ -241,7 +246,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
     }, []);
 
     // テーブルセルのクリックハンドラー
-    const handleCellClick = (event: React.MouseEvent<HTMLTableDataCellElement>, rowNum: number, isDeadlineCell: boolean) => {
+    const handleCellClick = (event: React.MouseEvent<HTMLTableCellElement>, rowNum: number, isDeadlineCell: boolean) => {
         // 納期セル以外がクリックされた場合はカレンダーを閉じる
         if (!isDeadlineCell) {
             setIsCalendarOpen(false);
@@ -265,6 +270,54 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         setActiveDeadlineRow(rowNum);
     };
 
+    // コンポーネントマウント時にデータを状態に設定
+    useEffect(() => {
+        if (!productionData?.length) return;
+        console.log('設定するデータ:', productionData); // デバッグ用
+
+        const newOrderNumbers: { [key: number]: string } = {};
+        const newDeadlines: { [key: number]: string } = {};
+        const newProductNames: { [key: number]: string } = {};
+
+        productionData.forEach((item, index) => {
+            const rowNum = index + 1;
+            const orderNumber = item.orderNumber.split('-')[0]; // 日付部分を除去
+            newOrderNumbers[rowNum] = orderNumber;
+            newDeadlines[rowNum] = item.deadline;
+            newProductNames[rowNum] = item.productName || '';
+        });
+
+        setOrderNumbers(newOrderNumbers);
+        setDeadlines(newDeadlines);
+        setProductNames(newProductNames);
+        setSelectedProcess(productionData[0]?.processOptions || 'ラミネート');
+    }, [productionData]);
+
+    // プルダウンメニューの変更ハンドラを追加
+    const handleProcessChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedProcess(e.target.value);
+        // データをクリア
+        setOrderNumbers({});
+        setDeadlines({});
+        setProductNames({});
+    };
+
+    // selectedDateが変更された時のクリーンアップ
+    useEffect(() => {
+        // データをクリア
+        setOrderNumbers({});
+        setDeadlines({});
+        setProductNames({});
+    }, [selectedDate]);  // selectedDateの変更を監視
+
+    if (isLoading) {
+        return <div className="p-4">データを読み込み中...</div>;
+    }
+
+    if (error) {
+        return <div className="p-4 text-red-600">{error}</div>;
+    }
+
     return (
         <div ref={tableRef} className="relative">
             <table className="w-full border-collapse text-sm">
@@ -274,7 +327,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             <select
                                 className="w-full bg-transparent font-bold text-blue-600"
                                 value={selectedProcess}
-                                onChange={(e) => setSelectedProcess(e.target.value)}
+                                onChange={handleProcessChange}
                             >
                                 {processOptions.map(option => (
                                     <option key={option} value={option}>{option}</option>
@@ -325,28 +378,29 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                                 className="border p-1"
                                 contentEditable={true}
                                 suppressContentEditableWarning={true}
-                                onClick={(e) => handleCellClick(e, rowNum, false)}
                                 onBlur={(e) => {
-                                    const newValue = e.currentTarget.textContent || '';
                                     setOrderNumbers(prev => ({
                                         ...prev,
-                                        [rowNum]: newValue
+                                        [rowNum]: e.currentTarget.textContent || ''
                                     }));
                                 }}
-                            />
+                            >
+                                {orderNumbers[rowNum]}
+                            </td>
                             <td
                                 className="border p-1"
                                 contentEditable={true}
                                 suppressContentEditableWarning={true}
-                                onClick={(e) => handleCellClick(e, rowNum, false)}
                                 onBlur={(e) => {
-                                    const newValue = e.currentTarget.textContent || '';
+                                    const content = e.currentTarget?.textContent;
                                     setProductNames(prev => ({
                                         ...prev,
-                                        [rowNum]: newValue
+                                        [rowNum]: content || ''
                                     }));
                                 }}
-                            />
+                            >
+                                {productNames[rowNum]}
+                            </td>
                             {Array.from({ length: 10 }, (_, i) => (
                                 <td
                                     key={i}
