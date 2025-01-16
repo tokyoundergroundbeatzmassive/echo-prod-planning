@@ -7,6 +7,7 @@ interface ProductionData {
     processOptions: string;
     deadline: string;
     productName: string;
+    orderQuantity: string;
     // 他のフィールドも必要に応じて追加
 }
 
@@ -43,6 +44,7 @@ export const useProductionData = (selectedDate: Date, processOptions: string = '
                                     processOptions
                                     deadline
                                     productName
+                                    orderQuantity
                                 }
                             }
                         }
