@@ -32,6 +32,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
     const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
     const tableRef = useRef<HTMLDivElement>(null);
     const [orderQuantities, setOrderQuantities] = useState<{ [key: number]: number }>({});
+    const [processPlanQuantities, setProcessPlanQuantities] = useState<{ [key: number]: number }>({});
 
     // 工程オプション
     const processOptions = [
@@ -116,6 +117,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         const newDeadlines: { [key: number]: string } = {};
         const newProductNames: { [key: number]: string } = {};
         const newOrderQuantities: { [key: number]: number } = {};
+        const newProcessPlanQuantities: { [key: number]: number } = {};
 
         productionData.forEach((item, index) => {
             const rowNum = index + 1;
@@ -124,12 +126,14 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             newDeadlines[rowNum] = item.deadline;
             newProductNames[rowNum] = item.productName || '';
             newOrderQuantities[rowNum] = parseInt(item.orderQuantity, 10) || 0;
+            newProcessPlanQuantities[rowNum] = Number(item.processPlanQuantity) || 0;
         });
 
         setOrderNumbers(newOrderNumbers);
         setDeadlines(newDeadlines);
         setProductNames(newProductNames);
         setOrderQuantities(newOrderQuantities);
+        setProcessPlanQuantities(newProcessPlanQuantities);
         setSelectedProcess(productionData[0]?.processOptions || 'ラミネート');
     }, [productionData]);
 
@@ -139,6 +143,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         setDeadlines({});
         setProductNames({});
         setOrderQuantities({});
+        setProcessPlanQuantities({});
     }, [selectedDate]);
 
     const saveRowData = async (rowNum: string, dateStr: string) => {
@@ -153,6 +158,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
 
         const productName = productNames[rowNum];
         const orderQuantity = orderQuantities[rowNum];
+        const processPlanQuantity = processPlanQuantities[rowNum];
 
         const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
 
@@ -166,6 +172,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             deadline
                             productName
                             orderQuantity
+                            processPlanQuantity
                         }
                     }
                 `,
@@ -175,7 +182,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         processOptions: selectedProcess,
                         deadline: deadline,
                         productName: productName,
-                        orderQuantity: orderQuantity
+                        orderQuantity: orderQuantity,
+                        processPlanQuantity: processPlanQuantity
                     }
                 }
             });
@@ -189,6 +197,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             deadline
                             productName
                             orderQuantity
+                            processPlanQuantity
                         }
                     }
                 `,
@@ -198,7 +207,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         processOptions: selectedProcess,
                         deadline: deadline,
                         productName: productName,
-                        orderQuantity: orderQuantity
+                        orderQuantity: orderQuantity,
+                        processPlanQuantity: processPlanQuantity
                     }
                 }
             });
@@ -224,9 +234,11 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                     productNames={productNames}
                     deadlines={deadlines}
                     orderQuantities={orderQuantities}
+                    processPlanQuantities={processPlanQuantities}
                     setOrderNumbers={setOrderNumbers}
                     setProductNames={setProductNames}
                     setOrderQuantities={setOrderQuantities}
+                    setProcessPlanQuantities={setProcessPlanQuantities}
                     handleCellClick={handleCellClick}
                     addRow={addRow}
                     removeRow={removeRow}

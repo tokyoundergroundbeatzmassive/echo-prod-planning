@@ -9,12 +9,14 @@ interface ProductionTableBodyProps {
     productNames: { [key: number]: string };
     deadlines: { [key: number]: string };
     orderQuantities: { [key: number]: number };
+    processPlanQuantities: { [key: number]: number };
     setOrderNumbers: (value: React.SetStateAction<{ [key: number]: string }>) => void;
     setProductNames: (value: React.SetStateAction<{ [key: number]: string }>) => void;
     handleCellClick: (event: React.MouseEvent<HTMLTableCellElement>, rowNum: number, isDeadlineCell: boolean) => void;
     addRow: () => void;
     removeRow: () => void;
     setOrderQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setProcessPlanQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
 }
 
 export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
@@ -24,12 +26,14 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
     productNames,
     deadlines,
     orderQuantities,
+    processPlanQuantities,
     setOrderNumbers,
     setProductNames,
     handleCellClick,
     addRow,
     removeRow,
-    setOrderQuantities
+    setOrderQuantities,
+    setProcessPlanQuantities
 }) => {
     return (
         <tbody>
@@ -93,7 +97,22 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                     >
                         {orderQuantities[rowNum]}
                     </td>
-                    {Array.from({ length: 9 }, (_, i) => (
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseInt(content, 10) || 0;
+                            setProcessPlanQuantities(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {processPlanQuantities[rowNum]}
+                    </td>
+                    {Array.from({ length: 8 }, (_, i) => (
                         <td
                             key={i}
                             className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
