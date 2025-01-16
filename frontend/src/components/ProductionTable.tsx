@@ -323,7 +323,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             <table className="w-full border-collapse text-sm">
                 <thead>
                     <tr>
-                        <th colSpan={3} className="border bg-gray-100 p-1 font-normal">
+                        <th colSpan={4} className="border bg-gray-100 p-1 font-normal">
                             <select
                                 className="w-full bg-transparent font-bold text-blue-600"
                                 value={selectedProcess}
@@ -334,7 +334,6 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                                 ))}
                             </select>
                         </th>
-                        <th rowSpan={2} className="border bg-gray-100 p-1 font-normal">受注数</th>
                         <th colSpan={2} className="border bg-gray-100 p-1 font-normal">加工計画</th>
                         <th colSpan={2} className="border bg-gray-100 p-1 font-normal">加工実績</th>
                         <th colSpan={2} className="border bg-gray-100 p-1 font-normal">検査計画</th>
@@ -346,6 +345,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         <th className="border bg-gray-100 p-1 font-normal">No.</th>
                         <th className="border bg-gray-100 p-1 font-normal">受注番号</th>
                         <th className="border bg-gray-100 p-1 font-normal">製品名</th>
+                        <th className="border bg-gray-100 p-1 font-normal">受注数</th>
                         <th className="border bg-gray-100 p-1 font-normal">数量</th>
                         <th className="border bg-gray-100 p-1 font-normal">工数</th>
                         <th className="border bg-gray-100 p-1 font-normal">実績</th>
