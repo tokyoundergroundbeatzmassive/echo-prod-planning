@@ -35,6 +35,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
     const [processPlanQuantities, setProcessPlanQuantities] = useState<{ [key: number]: number }>({});
     const [processPlanTimes, setProcessPlanTimes] = useState<{ [key: number]: number }>({});
     const [processResultQuantities, setProcessResultQuantities] = useState<{ [key: number]: number }>({});
+    const [processResultTimes, setProcessResultTimes] = useState<{ [key: number]: number }>({});
+    const [inspectionPlanQuantities, setInspectionPlanQuantities] = useState<{ [key: number]: number }>({});
+    const [inspectionPlanTimes, setInspectionPlanTimes] = useState<{ [key: number]: number }>({});
+    const [inspectionResultQuantities, setInspectionResultQuantities] = useState<{ [key: number]: number }>({});
+    const [inspectionResultTimes, setInspectionResultTimes] = useState<{ [key: number]: number }>({});
+    const [boxCounts, setBoxCounts] = useState<{ [key: number]: number }>({});
 
     // 工程オプション
     const processOptions = [
@@ -122,6 +128,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         const newProcessPlanQuantities: { [key: number]: number } = {};
         const newProcessPlanTimes: { [key: number]: number } = {};
         const newProcessResultQuantities: { [key: number]: number } = {};
+        const newProcessResultTimes: { [key: number]: number } = {};
+        const newInspectionPlanQuantities: { [key: number]: number } = {};
+        const newInspectionPlanTimes: { [key: number]: number } = {};
+        const newInspectionResultQuantities: { [key: number]: number } = {};
+        const newInspectionResultTimes: { [key: number]: number } = {};
+        const newBoxCounts: { [key: number]: number } = {};
 
         productionData.forEach((item, index) => {
             const rowNum = index + 1;
@@ -133,6 +145,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             newProcessPlanQuantities[rowNum] = Number(item.processPlanQuantity) || 0;
             newProcessPlanTimes[rowNum] = Number(item.processPlanTime) || 0;
             newProcessResultQuantities[rowNum] = Number(item.processResultQuantity) || 0;
+            newProcessResultTimes[rowNum] = Number(item.processResultTime) || 0;
+            newInspectionPlanQuantities[rowNum] = Number(item.inspectionPlanQuantity) || 0;
+            newInspectionPlanTimes[rowNum] = Number(item.inspectionPlanTime) || 0;
+            newInspectionResultQuantities[rowNum] = Number(item.inspectionResultQuantity) || 0;
+            newInspectionResultTimes[rowNum] = Number(item.inspectionResultTime) || 0;
+            newBoxCounts[rowNum] = Number(item.boxCount) || 0;
         });
 
         setOrderNumbers(newOrderNumbers);
@@ -142,6 +160,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         setProcessPlanQuantities(newProcessPlanQuantities);
         setProcessPlanTimes(newProcessPlanTimes);
         setProcessResultQuantities(newProcessResultQuantities);
+        setProcessResultTimes(newProcessResultTimes);
+        setInspectionPlanQuantities(newInspectionPlanQuantities);
+        setInspectionPlanTimes(newInspectionPlanTimes);
+        setInspectionResultQuantities(newInspectionResultQuantities);
+        setInspectionResultTimes(newInspectionResultTimes);
+        setBoxCounts(newBoxCounts);
         setSelectedProcess(productionData[0]?.processOptions || 'ラミネート');
     }, [productionData]);
 
@@ -154,6 +178,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         setProcessPlanQuantities({});
         setProcessPlanTimes({});
         setProcessResultQuantities({});
+        setProcessResultTimes({});
+        setInspectionPlanQuantities({});
+        setInspectionPlanTimes({});
+        setInspectionResultQuantities({});
+        setInspectionResultTimes({});
+        setBoxCounts({});
     }, [selectedDate]);
 
     const saveRowData = async (rowNum: string, dateStr: string) => {
@@ -171,6 +201,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         const processPlanQuantity = processPlanQuantities[rowNum];
         const processPlanTime = processPlanTimes[rowNum];
         const processResultQuantity = processResultQuantities[rowNum];
+        const processResultTime = processResultTimes[rowNum];
+        const inspectionPlanQuantity = inspectionPlanQuantities[rowNum];
+        const inspectionPlanTime = inspectionPlanTimes[rowNum];
+        const inspectionResultQuantity = inspectionResultQuantities[rowNum];
+        const inspectionResultTime = inspectionResultTimes[rowNum];
+        const boxCount = boxCounts[rowNum];
 
         const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
 
@@ -187,6 +223,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             processPlanQuantity
                             processPlanTime
                             processResultQuantity
+                            processResultTime
+                            inspectionPlanQuantity
+                            inspectionPlanTime
+                            inspectionResultQuantity
+                            inspectionResultTime
+                            boxCount
                         }
                     }
                 `,
@@ -199,7 +241,13 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         orderQuantity: orderQuantity,
                         processPlanQuantity: processPlanQuantity,
                         processPlanTime: processPlanTime,
-                        processResultQuantity: processResultQuantity
+                        processResultQuantity: processResultQuantity,
+                        processResultTime: processResultTime,
+                        inspectionPlanQuantity: inspectionPlanQuantity,
+                        inspectionPlanTime: inspectionPlanTime,
+                        inspectionResultQuantity: inspectionResultQuantity,
+                        inspectionResultTime: inspectionResultTime,
+                        boxCount: boxCount
                     }
                 }
             });
@@ -216,6 +264,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             processPlanQuantity
                             processPlanTime
                             processResultQuantity
+                            processResultTime
+                            inspectionPlanQuantity
+                            inspectionPlanTime
+                            inspectionResultQuantity
+                            inspectionResultTime
+                            boxCount
                         }
                     }
                 `,
@@ -228,7 +282,13 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         orderQuantity: orderQuantity,
                         processPlanQuantity: processPlanQuantity,
                         processPlanTime: processPlanTime,
-                        processResultQuantity: processResultQuantity
+                        processResultQuantity: processResultQuantity,
+                        processResultTime: processResultTime,
+                        inspectionPlanQuantity: inspectionPlanQuantity,
+                        inspectionPlanTime: inspectionPlanTime,
+                        inspectionResultQuantity: inspectionResultQuantity,
+                        inspectionResultTime: inspectionResultTime,
+                        boxCount: boxCount
                     }
                 }
             });
@@ -257,12 +317,24 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                     processPlanQuantities={processPlanQuantities}
                     processPlanTimes={processPlanTimes}
                     processResultQuantities={processResultQuantities}
+                    processResultTimes={processResultTimes}
+                    inspectionPlanQuantities={inspectionPlanQuantities}
+                    inspectionPlanTimes={inspectionPlanTimes}
+                    inspectionResultQuantities={inspectionResultQuantities}
+                    inspectionResultTimes={inspectionResultTimes}
+                    boxCounts={boxCounts}
                     setOrderNumbers={setOrderNumbers}
                     setProductNames={setProductNames}
                     setOrderQuantities={setOrderQuantities}
                     setProcessPlanQuantities={setProcessPlanQuantities}
                     setProcessPlanTimes={setProcessPlanTimes}
                     setProcessResultQuantities={setProcessResultQuantities}
+                    setProcessResultTimes={setProcessResultTimes}
+                    setInspectionPlanQuantities={setInspectionPlanQuantities}
+                    setInspectionPlanTimes={setInspectionPlanTimes}
+                    setInspectionResultQuantities={setInspectionResultQuantities}
+                    setInspectionResultTimes={setInspectionResultTimes}
+                    setBoxCounts={setBoxCounts}
                     handleCellClick={handleCellClick}
                     addRow={addRow}
                     removeRow={removeRow}

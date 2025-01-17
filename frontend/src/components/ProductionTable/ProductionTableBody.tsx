@@ -12,6 +12,12 @@ interface ProductionTableBodyProps {
     processPlanQuantities: { [key: number]: number };
     processPlanTimes: { [key: number]: number };
     processResultQuantities: { [key: number]: number };
+    processResultTimes: { [key: number]: number };
+    inspectionPlanQuantities: { [key: number]: number };
+    inspectionPlanTimes: { [key: number]: number };
+    inspectionResultQuantities: { [key: number]: number };
+    inspectionResultTimes: { [key: number]: number };
+    boxCounts: { [key: number]: number };
     setOrderNumbers: (value: React.SetStateAction<{ [key: number]: string }>) => void;
     setProductNames: (value: React.SetStateAction<{ [key: number]: string }>) => void;
     handleCellClick: (event: React.MouseEvent<HTMLTableCellElement>, rowNum: number, isDeadlineCell: boolean) => void;
@@ -21,6 +27,12 @@ interface ProductionTableBodyProps {
     setProcessPlanQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
     setProcessPlanTimes: (value: React.SetStateAction<{ [key: number]: number }>) => void;
     setProcessResultQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setProcessResultTimes: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setInspectionPlanQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setInspectionPlanTimes: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setInspectionResultQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setInspectionResultTimes: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    setBoxCounts: (value: React.SetStateAction<{ [key: number]: number }>) => void;
 }
 
 export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
@@ -33,6 +45,12 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
     processPlanQuantities,
     processPlanTimes,
     processResultQuantities,
+    processResultTimes,
+    inspectionPlanQuantities,
+    inspectionPlanTimes,
+    inspectionResultQuantities,
+    inspectionResultTimes,
+    boxCounts,
     setOrderNumbers,
     setProductNames,
     handleCellClick,
@@ -41,7 +59,13 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
     setOrderQuantities,
     setProcessPlanQuantities,
     setProcessPlanTimes,
-    setProcessResultQuantities
+    setProcessResultQuantities,
+    setProcessResultTimes,
+    setInspectionPlanQuantities,
+    setInspectionPlanTimes,
+    setInspectionResultQuantities,
+    setInspectionResultTimes,
+    setBoxCounts
 }) => {
     return (
         <tbody>
@@ -150,15 +174,96 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                     >
                         {processResultQuantities[rowNum]}
                     </td>
-                    {Array.from({ length: 6 }, (_, i) => (
-                        <td
-                            key={i}
-                            className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
-                            contentEditable={true}
-                            suppressContentEditableWarning={true}
-                            onClick={(e) => handleCellClick(e, rowNum, false)}
-                        />
-                    ))}
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseFloat(content) || 0;
+                            setProcessResultTimes(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {processResultTimes[rowNum]}
+                    </td>
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseInt(content, 10) || 0;
+                            setInspectionPlanQuantities(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {inspectionPlanQuantities[rowNum]}
+                    </td>
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseFloat(content) || 0;
+                            setInspectionPlanTimes(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {inspectionPlanTimes[rowNum]}
+                    </td>
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseInt(content, 10) || 0;
+                            setInspectionResultQuantities(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {inspectionResultQuantities[rowNum]}
+                    </td>
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseFloat(content) || 0;
+                            setInspectionResultTimes(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {inspectionResultTimes[rowNum]}
+                    </td>
+                    <td
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
+                        onBlur={(e) => {
+                            const content = e.currentTarget?.textContent ?? '';
+                            const numberValue = parseInt(content, 10) || 0;
+                            setBoxCounts(prev => ({
+                                ...prev,
+                                [rowNum]: numberValue
+                            }));
+                        }}
+                    >
+                        {boxCounts[rowNum]}
+                    </td>
                     <td
                         className="border p-1 min-w-[60px] text-right hover:bg-blue-50 cursor-pointer"
                         onClick={(e) => handleCellClick(e, rowNum, true)}

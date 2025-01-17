@@ -11,7 +11,12 @@ interface ProductionData {
     processPlanQuantity: number;
     processPlanTime: number;
     processResultQuantity: number;
-    // 他のフィールドも必要に応じて追加
+    processResultTime: number;
+    inspectionPlanQuantity: number;
+    inspectionPlanTime: number;
+    inspectionResultQuantity: number;
+    inspectionResultTime: number;
+    boxCount: number;
 }
 
 interface ListEchoProdManagementsQuery {
@@ -51,6 +56,12 @@ export const useProductionData = (selectedDate: Date, processOptions: string = '
                                     processPlanQuantity
                                     processPlanTime
                                     processResultQuantity
+                                    processResultTime
+                                    inspectionPlanQuantity
+                                    inspectionPlanTime
+                                    inspectionResultQuantity
+                                    inspectionResultTime
+                                    boxCount
                                 }
                             }
                         }
