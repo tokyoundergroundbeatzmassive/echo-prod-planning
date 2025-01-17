@@ -1,6 +1,7 @@
 import { generateClient } from 'aws-amplify/api';
 import React, { useEffect, useRef, useState } from 'react';
 import { useProductionData } from '../../hooks/useProductionData';
+import { formatDateToString, generateDateRange, parseStringToDate } from '../../utils/dateUtils';
 import { DatePicker } from './DatePicker';
 import { ProductionTableBody } from './ProductionTableBody';
 import { ProductionTableHeader } from './ProductionTableHeader';
@@ -8,13 +9,6 @@ import { ProductionTableHeader } from './ProductionTableHeader';
 interface ProductionTableProps {
     selectedDate: Date;
 }
-
-const formatDateToString = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}${month}${day}`;
-};
 
 const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
     const [selectedProcess, setSelectedProcess] = useState('ラミネート');
@@ -61,6 +55,19 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
 
     const handleProcessChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedProcess(e.target.value);
+        setOrderNumbers({});
+        setDeadlines({});
+        setProductNames({});
+        setOrderQuantities({});
+        setProcessPlanQuantities({});
+        setProcessPlanTimes({});
+        setProcessResultQuantities({});
+        setProcessResultTimes({});
+        setInspectionPlanQuantities({});
+        setInspectionPlanTimes({});
+        setInspectionResultQuantities({});
+        setInspectionResultTimes({});
+        setBoxCounts({});
     };
 
     const handleCellClick = (event: React.MouseEvent<HTMLTableCellElement>, rowNum: number, isDeadlineCell: boolean) => {
@@ -186,7 +193,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         setBoxCounts({});
     }, [selectedDate]);
 
-    const saveRowData = async (rowNum: string, dateStr: string) => {
+    const saveRowData = async (rowNum: string, currentDateStr: string) => {
         const orderNumber = orderNumbers[rowNum];
         if (!orderNumber) return false;
 
@@ -208,92 +215,108 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         const inspectionResultTime = inspectionResultTimes[rowNum];
         const boxCount = boxCounts[rowNum];
 
-        const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
+        // 開始日と終了日をDate型に変換
+        const startDate = parseStringToDate(currentDateStr);
+        const endDate = parseStringToDate(deadline);
+        // 日付の範囲を生成
+        const dateRange = generateDateRange(startDate, endDate);
 
         try {
-            await client.graphql({
-                query: `
-                    mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
-                        updateEchoProdManagement(input: $input) {
-                            orderNumber
-                            processOptions
-                            deadline
-                            productName
-                            orderQuantity
-                            processPlanQuantity
-                            processPlanTime
-                            processResultQuantity
-                            processResultTime
-                            inspectionPlanQuantity
-                            inspectionPlanTime
-                            inspectionResultQuantity
-                            inspectionResultTime
-                            boxCount
+            // 各日付に対してレコードを作成または更新
+            for (const date of dateRange) {
+                const dateStr = formatDateToString(date);
+                const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
+
+                try {
+                    await client.graphql({
+                        query: `
+                            mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
+                                updateEchoProdManagement(input: $input) {
+                                    orderNumber
+                                    processOptions
+                                    deadline
+                                    productName
+                                    orderQuantity
+                                    processPlanQuantity
+                                    processPlanTime
+                                    processResultQuantity
+                                    processResultTime
+                                    inspectionPlanQuantity
+                                    inspectionPlanTime
+                                    inspectionResultQuantity
+                                    inspectionResultTime
+                                    boxCount
+                                }
+                            }
+                        `,
+                        variables: {
+                            input: {
+                                orderNumber: uniqueOrderNumber,
+                                processOptions: selectedProcess,
+                                deadline: deadline,
+                                productName: productName,
+                                orderQuantity: orderQuantity,
+                                processPlanQuantity: processPlanQuantity,
+                                processPlanTime: processPlanTime,
+                                processResultQuantity: processResultQuantity,
+                                processResultTime: processResultTime,
+                                inspectionPlanQuantity: inspectionPlanQuantity,
+                                inspectionPlanTime: inspectionPlanTime,
+                                inspectionResultQuantity: inspectionResultQuantity,
+                                inspectionResultTime: inspectionResultTime,
+                                boxCount: boxCount
+                            }
                         }
-                    }
-                `,
-                variables: {
-                    input: {
-                        orderNumber: uniqueOrderNumber,
-                        processOptions: selectedProcess,
-                        deadline: deadline,
-                        productName: productName,
-                        orderQuantity: orderQuantity,
-                        processPlanQuantity: processPlanQuantity,
-                        processPlanTime: processPlanTime,
-                        processResultQuantity: processResultQuantity,
-                        processResultTime: processResultTime,
-                        inspectionPlanQuantity: inspectionPlanQuantity,
-                        inspectionPlanTime: inspectionPlanTime,
-                        inspectionResultQuantity: inspectionResultQuantity,
-                        inspectionResultTime: inspectionResultTime,
-                        boxCount: boxCount
-                    }
+                    });
+                } catch (error) {
+                    await client.graphql({
+                        query: `
+                            mutation CreateEchoProdManagement($input: CreateEchoProdManagementInput!) {
+                                createEchoProdManagement(input: $input) {
+                                    orderNumber
+                                    processOptions
+                                    deadline
+                                    productName
+                                    orderQuantity
+                                    processPlanQuantity
+                                    processPlanTime
+                                    processResultQuantity
+                                    processResultTime
+                                    inspectionPlanQuantity
+                                    inspectionPlanTime
+                                    inspectionResultQuantity
+                                    inspectionResultTime
+                                    boxCount
+                                }
+                            }
+                        `,
+                        variables: {
+                            input: {
+                                orderNumber: uniqueOrderNumber,
+                                processOptions: selectedProcess,
+                                deadline: deadline,
+                                productName: productName,
+                                orderQuantity: orderQuantity,
+                                processPlanQuantity: processPlanQuantity,
+                                processPlanTime: processPlanTime,
+                                processResultQuantity: processResultQuantity,
+                                processResultTime: processResultTime,
+                                inspectionPlanQuantity: inspectionPlanQuantity,
+                                inspectionPlanTime: inspectionPlanTime,
+                                inspectionResultQuantity: inspectionResultQuantity,
+                                inspectionResultTime: inspectionResultTime,
+                                boxCount: boxCount
+                            }
+                        }
+                    });
                 }
-            });
+            }
+            return true;
         } catch (error) {
-            await client.graphql({
-                query: `
-                    mutation CreateEchoProdManagement($input: CreateEchoProdManagementInput!) {
-                        createEchoProdManagement(input: $input) {
-                            orderNumber
-                            processOptions
-                            deadline
-                            productName
-                            orderQuantity
-                            processPlanQuantity
-                            processPlanTime
-                            processResultQuantity
-                            processResultTime
-                            inspectionPlanQuantity
-                            inspectionPlanTime
-                            inspectionResultQuantity
-                            inspectionResultTime
-                            boxCount
-                        }
-                    }
-                `,
-                variables: {
-                    input: {
-                        orderNumber: uniqueOrderNumber,
-                        processOptions: selectedProcess,
-                        deadline: deadline,
-                        productName: productName,
-                        orderQuantity: orderQuantity,
-                        processPlanQuantity: processPlanQuantity,
-                        processPlanTime: processPlanTime,
-                        processResultQuantity: processResultQuantity,
-                        processResultTime: processResultTime,
-                        inspectionPlanQuantity: inspectionPlanQuantity,
-                        inspectionPlanTime: inspectionPlanTime,
-                        inspectionResultQuantity: inspectionResultQuantity,
-                        inspectionResultTime: inspectionResultTime,
-                        boxCount: boxCount
-                    }
-                }
-            });
+            console.error('保存エラー:', error);
+            alert('データの保存中にエラーが発生しました');
+            return false;
         }
-        return true;
     };
 
     if (isLoading) return <div className="p-4">データを読み込み中...</div>;
