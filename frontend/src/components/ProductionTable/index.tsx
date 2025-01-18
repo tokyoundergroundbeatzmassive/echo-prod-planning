@@ -209,16 +209,21 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         }
 
         const productName = productNames[rowNum];
-        const orderQuantity = orderQuantities[rowNum];
+        if (!productName) {
+            alert(`行 ${rowNum} の品名が入力されていません`);
+            return false;
+        }
 
-        // 開始日と終了日をDate型に変換
-        const startDate = parseStringToDate(currentDateStr);
-        const endDate = parseStringToDate(deadline);
-        // 日付の範囲を生成
-        const dateRange = generateDateRange(startDate, endDate);
+        const orderQuantity = orderQuantities[rowNum];
+        if (orderQuantity === null || orderQuantity === undefined) {
+            alert(`行 ${rowNum} の受注数が入力されていません`);
+            return false;
+        }
 
         try {
-            // 各日付に対してレコードを作成または更新
+            // 以下は既存のコード
+            const dateRange = generateDateRange(parseStringToDate(currentDateStr), parseStringToDate(deadline));
+
             for (const date of dateRange) {
                 const dateStr = formatDateToString(date);
                 const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
@@ -227,8 +232,8 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                     orderNumber: uniqueOrderNumber,
                     processOptions: selectedProcess,
                     deadline: deadline,
-                    productName: productName || '',  // 空文字列の場合はそのまま空文字列を保存
-                    orderQuantity: orderQuantity || null  // 値がない場合はnullを設定
+                    productName: productName,
+                    orderQuantity: orderQuantity
                 };
 
                 try {
