@@ -115,12 +115,11 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         {productNames[rowNum]}
                     </td>
                     <td
-                        className="border p-1"
+                        className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
                         contentEditable={true}
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            // 空文字列の場合はnullを設定
                             const numberValue = content.trim() === '' ? null : parseInt(content, 10);
                             setOrderQuantities(prev => ({
                                 ...prev,
@@ -128,7 +127,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                             }));
                         }}
                     >
-                        {orderQuantities[rowNum] ?? ''}  {/* nullまたはundefinedの場合は空文字列を表示 */}
+                        {orderQuantities[rowNum]}
                     </td>
                     <td
                         className="border p-1 min-w-[60px] text-right hover:bg-blue-50"

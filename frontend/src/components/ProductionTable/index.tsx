@@ -237,10 +237,10 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
                                 updateEchoProdManagement(input: $input) {
                                     orderNumber
-                                    processOptions
-                                    deadline
                                     productName
                                     orderQuantity
+                                    deadline
+                                    processOptions
                                 }
                             }
                         `,
@@ -284,6 +284,10 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             processOptions: selectedProcess,
         };
 
+        if (orderQuantities[rowNum] !== null) {
+            detailInput.orderQuantity = orderQuantities[rowNum];
+        }
+
         // 各フィールドが存在する場合のみ追加
         if (processPlanQuantities[rowNum] !== null) {
             detailInput.processPlanQuantity = processPlanQuantities[rowNum];
@@ -320,6 +324,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                         updateEchoProdManagement(input: $input) {
                             orderNumber
                             processOptions
+                            orderQuantity
                             processPlanQuantity
                             processPlanTime
                             processResultQuantity
