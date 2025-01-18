@@ -25,16 +25,16 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
     const [activeDeadlineRow, setActiveDeadlineRow] = useState<number | null>(null);
     const [calendarPosition, setCalendarPosition] = useState({ top: 0, left: 0 });
     const tableRef = useRef<HTMLDivElement>(null);
-    const [orderQuantities, setOrderQuantities] = useState<{ [key: number]: number }>({});
-    const [processPlanQuantities, setProcessPlanQuantities] = useState<{ [key: number]: number }>({});
-    const [processPlanTimes, setProcessPlanTimes] = useState<{ [key: number]: number }>({});
-    const [processResultQuantities, setProcessResultQuantities] = useState<{ [key: number]: number }>({});
-    const [processResultTimes, setProcessResultTimes] = useState<{ [key: number]: number }>({});
-    const [inspectionPlanQuantities, setInspectionPlanQuantities] = useState<{ [key: number]: number }>({});
-    const [inspectionPlanTimes, setInspectionPlanTimes] = useState<{ [key: number]: number }>({});
-    const [inspectionResultQuantities, setInspectionResultQuantities] = useState<{ [key: number]: number }>({});
-    const [inspectionResultTimes, setInspectionResultTimes] = useState<{ [key: number]: number }>({});
-    const [boxCounts, setBoxCounts] = useState<{ [key: number]: number }>({});
+    const [orderQuantities, setOrderQuantities] = useState<{ [key: number]: number | null }>({});
+    const [processPlanQuantities, setProcessPlanQuantities] = useState<{ [key: number]: number | null }>({});
+    const [processPlanTimes, setProcessPlanTimes] = useState<{ [key: number]: number | null }>({});
+    const [processResultQuantities, setProcessResultQuantities] = useState<{ [key: number]: number | null }>({});
+    const [processResultTimes, setProcessResultTimes] = useState<{ [key: number]: number | null }>({});
+    const [inspectionPlanQuantities, setInspectionPlanQuantities] = useState<{ [key: number]: number | null }>({});
+    const [inspectionPlanTimes, setInspectionPlanTimes] = useState<{ [key: number]: number | null }>({});
+    const [inspectionResultQuantities, setInspectionResultQuantities] = useState<{ [key: number]: number | null }>({});
+    const [inspectionResultTimes, setInspectionResultTimes] = useState<{ [key: number]: number | null }>({});
+    const [boxCounts, setBoxCounts] = useState<{ [key: number]: number | null }>({});
 
     // 工程オプション
     const processOptions = [
@@ -111,8 +111,13 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             const dateStr = formatDateToString(selectedDate);
 
             for (const rowNum of Object.keys(orderNumbers)) {
+                // 基本データの保存（納期までの一括登録）
                 const result = await saveRowData(rowNum, dateStr);
                 if (!result) return;
+
+                // 詳細データの保存（現在の日付のみ）
+                const detailResult = await saveDetailData(rowNum, dateStr);
+                if (!detailResult) return;
             }
 
             alert('処理が完了しました');
@@ -131,16 +136,16 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         const newOrderNumbers: { [key: number]: string } = {};
         const newDeadlines: { [key: number]: string } = {};
         const newProductNames: { [key: number]: string } = {};
-        const newOrderQuantities: { [key: number]: number } = {};
-        const newProcessPlanQuantities: { [key: number]: number } = {};
-        const newProcessPlanTimes: { [key: number]: number } = {};
-        const newProcessResultQuantities: { [key: number]: number } = {};
-        const newProcessResultTimes: { [key: number]: number } = {};
-        const newInspectionPlanQuantities: { [key: number]: number } = {};
-        const newInspectionPlanTimes: { [key: number]: number } = {};
-        const newInspectionResultQuantities: { [key: number]: number } = {};
-        const newInspectionResultTimes: { [key: number]: number } = {};
-        const newBoxCounts: { [key: number]: number } = {};
+        const newOrderQuantities: { [key: number]: number | null } = {};
+        const newProcessPlanQuantities: { [key: number]: number | null } = {};
+        const newProcessPlanTimes: { [key: number]: number | null } = {};
+        const newProcessResultQuantities: { [key: number]: number | null } = {};
+        const newProcessResultTimes: { [key: number]: number | null } = {};
+        const newInspectionPlanQuantities: { [key: number]: number | null } = {};
+        const newInspectionPlanTimes: { [key: number]: number | null } = {};
+        const newInspectionResultQuantities: { [key: number]: number | null } = {};
+        const newInspectionResultTimes: { [key: number]: number | null } = {};
+        const newBoxCounts: { [key: number]: number | null } = {};
 
         productionData.forEach((item, index) => {
             const rowNum = index + 1;
@@ -148,16 +153,16 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             newOrderNumbers[rowNum] = orderNumber;
             newDeadlines[rowNum] = item.deadline;
             newProductNames[rowNum] = item.productName || '';
-            newOrderQuantities[rowNum] = parseInt(item.orderQuantity, 10) || 0;
-            newProcessPlanQuantities[rowNum] = Number(item.processPlanQuantity) || 0;
-            newProcessPlanTimes[rowNum] = Number(item.processPlanTime) || 0;
-            newProcessResultQuantities[rowNum] = Number(item.processResultQuantity) || 0;
-            newProcessResultTimes[rowNum] = Number(item.processResultTime) || 0;
-            newInspectionPlanQuantities[rowNum] = Number(item.inspectionPlanQuantity) || 0;
-            newInspectionPlanTimes[rowNum] = Number(item.inspectionPlanTime) || 0;
-            newInspectionResultQuantities[rowNum] = Number(item.inspectionResultQuantity) || 0;
-            newInspectionResultTimes[rowNum] = Number(item.inspectionResultTime) || 0;
-            newBoxCounts[rowNum] = Number(item.boxCount) || 0;
+            newOrderQuantities[rowNum] = parseInt(item.orderQuantity, 10) || null;
+            newProcessPlanQuantities[rowNum] = Number(item.processPlanQuantity) || null;
+            newProcessPlanTimes[rowNum] = Number(item.processPlanTime) || null;
+            newProcessResultQuantities[rowNum] = Number(item.processResultQuantity) || null;
+            newProcessResultTimes[rowNum] = Number(item.processResultTime) || null;
+            newInspectionPlanQuantities[rowNum] = Number(item.inspectionPlanQuantity) || null;
+            newInspectionPlanTimes[rowNum] = Number(item.inspectionPlanTime) || null;
+            newInspectionResultQuantities[rowNum] = Number(item.inspectionResultQuantity) || null;
+            newInspectionResultTimes[rowNum] = Number(item.inspectionResultTime) || null;
+            newBoxCounts[rowNum] = Number(item.boxCount) || null;
         });
 
         setOrderNumbers(newOrderNumbers);
@@ -205,15 +210,6 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
 
         const productName = productNames[rowNum];
         const orderQuantity = orderQuantities[rowNum];
-        const processPlanQuantity = processPlanQuantities[rowNum];
-        const processPlanTime = processPlanTimes[rowNum];
-        const processResultQuantity = processResultQuantities[rowNum];
-        const processResultTime = processResultTimes[rowNum];
-        const inspectionPlanQuantity = inspectionPlanQuantities[rowNum];
-        const inspectionPlanTime = inspectionPlanTimes[rowNum];
-        const inspectionResultQuantity = inspectionResultQuantities[rowNum];
-        const inspectionResultTime = inspectionResultTimes[rowNum];
-        const boxCount = boxCounts[rowNum];
 
         // 開始日と終了日をDate型に変換
         const startDate = parseStringToDate(currentDateStr);
@@ -227,6 +223,14 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                 const dateStr = formatDateToString(date);
                 const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
 
+                const baseInput = {
+                    orderNumber: uniqueOrderNumber,
+                    processOptions: selectedProcess,
+                    deadline: deadline,
+                    productName: productName || '',  // 空文字列の場合はそのまま空文字列を保存
+                    orderQuantity: orderQuantity || null  // 値がない場合はnullを設定
+                };
+
                 try {
                     await client.graphql({
                         query: `
@@ -237,36 +241,10 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                                     deadline
                                     productName
                                     orderQuantity
-                                    processPlanQuantity
-                                    processPlanTime
-                                    processResultQuantity
-                                    processResultTime
-                                    inspectionPlanQuantity
-                                    inspectionPlanTime
-                                    inspectionResultQuantity
-                                    inspectionResultTime
-                                    boxCount
                                 }
                             }
                         `,
-                        variables: {
-                            input: {
-                                orderNumber: uniqueOrderNumber,
-                                processOptions: selectedProcess,
-                                deadline: deadline,
-                                productName: productName,
-                                orderQuantity: orderQuantity,
-                                processPlanQuantity: processPlanQuantity,
-                                processPlanTime: processPlanTime,
-                                processResultQuantity: processResultQuantity,
-                                processResultTime: processResultTime,
-                                inspectionPlanQuantity: inspectionPlanQuantity,
-                                inspectionPlanTime: inspectionPlanTime,
-                                inspectionResultQuantity: inspectionResultQuantity,
-                                inspectionResultTime: inspectionResultTime,
-                                boxCount: boxCount
-                            }
-                        }
+                        variables: { input: baseInput }
                     });
                 } catch (error) {
                     await client.graphql({
@@ -278,36 +256,10 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                                     deadline
                                     productName
                                     orderQuantity
-                                    processPlanQuantity
-                                    processPlanTime
-                                    processResultQuantity
-                                    processResultTime
-                                    inspectionPlanQuantity
-                                    inspectionPlanTime
-                                    inspectionResultQuantity
-                                    inspectionResultTime
-                                    boxCount
                                 }
                             }
                         `,
-                        variables: {
-                            input: {
-                                orderNumber: uniqueOrderNumber,
-                                processOptions: selectedProcess,
-                                deadline: deadline,
-                                productName: productName,
-                                orderQuantity: orderQuantity,
-                                processPlanQuantity: processPlanQuantity,
-                                processPlanTime: processPlanTime,
-                                processResultQuantity: processResultQuantity,
-                                processResultTime: processResultTime,
-                                inspectionPlanQuantity: inspectionPlanQuantity,
-                                inspectionPlanTime: inspectionPlanTime,
-                                inspectionResultQuantity: inspectionResultQuantity,
-                                inspectionResultTime: inspectionResultTime,
-                                boxCount: boxCount
-                            }
-                        }
+                        variables: { input: baseInput }
                     });
                 }
             }
@@ -315,6 +267,56 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         } catch (error) {
             console.error('保存エラー:', error);
             alert('データの保存中にエラーが発生しました');
+            return false;
+        }
+    };
+
+    // 個別データ更新用の関数
+    const saveDetailData = async (rowNum: string, currentDateStr: string) => {
+        const orderNumber = orderNumbers[rowNum];
+        if (!orderNumber) return false;
+
+        const uniqueOrderNumber = `${orderNumber}-${currentDateStr}`;
+
+        const detailInput = {
+            orderNumber: uniqueOrderNumber,
+            processOptions: selectedProcess,
+            processPlanQuantity: processPlanQuantities[rowNum] || null,
+            processPlanTime: processPlanTimes[rowNum] || null,
+            processResultQuantity: processResultQuantities[rowNum] || null,
+            processResultTime: processResultTimes[rowNum] || null,
+            inspectionPlanQuantity: inspectionPlanQuantities[rowNum] || null,
+            inspectionPlanTime: inspectionPlanTimes[rowNum] || null,
+            inspectionResultQuantity: inspectionResultQuantities[rowNum] || null,
+            inspectionResultTime: inspectionResultTimes[rowNum] || null,
+            boxCount: boxCounts[rowNum] || null
+        };
+
+        try {
+            await client.graphql({
+                query: `
+                    mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
+                        updateEchoProdManagement(input: $input) {
+                            orderNumber
+                            processOptions
+                            processPlanQuantity
+                            processPlanTime
+                            processResultQuantity
+                            processResultTime
+                            inspectionPlanQuantity
+                            inspectionPlanTime
+                            inspectionResultQuantity
+                            inspectionResultTime
+                            boxCount
+                        }
+                    }
+                `,
+                variables: { input: detailInput }
+            });
+            return true;
+        } catch (error) {
+            console.error('詳細データの保存エラー:', error);
+            alert('詳細データの保存中にエラーが発生しました');
             return false;
         }
     };

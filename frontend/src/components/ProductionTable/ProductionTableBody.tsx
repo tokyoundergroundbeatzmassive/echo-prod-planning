@@ -120,14 +120,15 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseInt(content, 10) || 0;
+                            // 空文字列の場合はnullを設定
+                            const numberValue = content.trim() === '' ? null : parseInt(content, 10);
                             setOrderQuantities(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
                             }));
                         }}
                     >
-                        {orderQuantities[rowNum]}
+                        {orderQuantities[rowNum] ?? ''}  {/* nullまたはundefinedの場合は空文字列を表示 */}
                     </td>
                     <td
                         className="border p-1 min-w-[60px] text-right hover:bg-blue-50"
