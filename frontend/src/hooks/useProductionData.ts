@@ -7,7 +7,7 @@ interface ProductionData {
     processOptions: string;
     deadline: string;
     productName: string;
-    orderQuantity: string;
+    orderQuantity: number;
     processPlanQuantity: number;
     processPlanTime: number;
     processResultQuantity: number;

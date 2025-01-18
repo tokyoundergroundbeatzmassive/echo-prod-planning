@@ -153,7 +153,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
             newOrderNumbers[rowNum] = orderNumber;
             newDeadlines[rowNum] = item.deadline;
             newProductNames[rowNum] = item.productName || '';
-            newOrderQuantities[rowNum] = parseInt(item.orderQuantity, 10) || null;
+            newOrderQuantities[rowNum] = Number(item.orderQuantity) || null;
             newProcessPlanQuantities[rowNum] = Number(item.processPlanQuantity) || null;
             newProcessPlanTimes[rowNum] = Number(item.processPlanTime) || null;
             newProcessResultQuantities[rowNum] = Number(item.processResultQuantity) || null;
@@ -237,10 +237,10 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                             mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
                                 updateEchoProdManagement(input: $input) {
                                     orderNumber
-                                    productName
+                                    processOptions
                                     orderQuantity
                                     deadline
-                                    processOptions
+                                    productName
                                 }
                             }
                         `,
@@ -253,9 +253,9 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
                                 createEchoProdManagement(input: $input) {
                                     orderNumber
                                     processOptions
+                                    orderQuantity
                                     deadline
                                     productName
-                                    orderQuantity
                                 }
                             }
                         `,
