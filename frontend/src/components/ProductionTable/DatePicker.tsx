@@ -25,6 +25,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     const renderCalendar = () => {
         const firstDay = new Date(currentDate.year, currentDate.month, 1);
         const lastDay = new Date(currentDate.year, currentDate.month + 1, 0);
+        const today = new Date();
         const days = [];
 
         // 前月の日付を埋める
@@ -38,6 +39,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
         // 当月の日付を埋める
         for (let date = 1; date <= lastDay.getDate(); date++) {
+            const currentDateObj = new Date(currentDate.year, currentDate.month, date);
+            const isToday = isSameDate(currentDateObj, today);
+
             days.push(
                 <div
                     key={date}
@@ -45,7 +49,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
                         onDateSelect(new Date(currentDate.year, currentDate.month, date));
                         onClose();
                     }}
-                    className="text-center p-1 cursor-pointer hover:bg-blue-100 rounded"
+                    className={`text-center p-1 cursor-pointer hover:bg-blue-100 rounded
+                        ${isToday ? 'bg-blue-100' : ''}`}
                 >
                     {date}
                 </div>
@@ -53,6 +58,47 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         }
 
         return days;
+    };
+
+    // 日付比較用のヘルパー関数
+    const isSameDate = (date1: Date, date2: Date): boolean => {
+        return (
+            date1.getFullYear() === date2.getFullYear() &&
+            date1.getMonth() === date2.getMonth() &&
+            date1.getDate() === date2.getDate()
+        );
+    };
+
+    // 前月へ移動
+    const handlePrevMonth = () => {
+        setCurrentDate(prev => {
+            if (prev.month === 0) {
+                return {
+                    year: prev.year - 1,
+                    month: 11
+                };
+            }
+            return {
+                ...prev,
+                month: prev.month - 1
+            };
+        });
+    };
+
+    // 翌月へ移動
+    const handleNextMonth = () => {
+        setCurrentDate(prev => {
+            if (prev.month === 11) {
+                return {
+                    year: prev.year + 1,
+                    month: 0
+                };
+            }
+            return {
+                ...prev,
+                month: prev.month + 1
+            };
+        });
     };
 
     return (
@@ -65,22 +111,14 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         >
             <div className="flex justify-between items-center mb-2">
                 <button
-                    onClick={() => setCurrentDate(prev => ({
-                        ...prev,
-                        month: prev.month - 1,
-                        year: prev.month === 0 ? prev.year - 1 : prev.year
-                    }))}
+                    onClick={handlePrevMonth}
                     className="px-2 hover:bg-gray-100 rounded"
                 >
                     ←
                 </button>
                 <span>{currentDate.year}年{currentDate.month + 1}月</span>
                 <button
-                    onClick={() => setCurrentDate(prev => ({
-                        ...prev,
-                        month: prev.month + 1,
-                        year: prev.month === 11 ? prev.year + 1 : prev.year
-                    }))}
+                    onClick={handleNextMonth}
                     className="px-2 hover:bg-gray-100 rounded"
                 >
                     →
