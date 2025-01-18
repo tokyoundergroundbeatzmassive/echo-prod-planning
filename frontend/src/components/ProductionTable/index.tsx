@@ -278,19 +278,40 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
 
         const uniqueOrderNumber = `${orderNumber}-${currentDateStr}`;
 
-        const detailInput = {
+        // 値がある場合のみオブジェクトに追加
+        const detailInput: any = {
             orderNumber: uniqueOrderNumber,
             processOptions: selectedProcess,
-            processPlanQuantity: processPlanQuantities[rowNum] || null,
-            processPlanTime: processPlanTimes[rowNum] || null,
-            processResultQuantity: processResultQuantities[rowNum] || null,
-            processResultTime: processResultTimes[rowNum] || null,
-            inspectionPlanQuantity: inspectionPlanQuantities[rowNum] || null,
-            inspectionPlanTime: inspectionPlanTimes[rowNum] || null,
-            inspectionResultQuantity: inspectionResultQuantities[rowNum] || null,
-            inspectionResultTime: inspectionResultTimes[rowNum] || null,
-            boxCount: boxCounts[rowNum] || null
         };
+
+        // 各フィールドが存在する場合のみ追加
+        if (processPlanQuantities[rowNum] !== null) {
+            detailInput.processPlanQuantity = processPlanQuantities[rowNum];
+        }
+        if (processPlanTimes[rowNum] !== null) {
+            detailInput.processPlanTime = processPlanTimes[rowNum];
+        }
+        if (processResultQuantities[rowNum] !== null) {
+            detailInput.processResultQuantity = processResultQuantities[rowNum];
+        }
+        if (processResultTimes[rowNum] !== null) {
+            detailInput.processResultTime = processResultTimes[rowNum];
+        }
+        if (inspectionPlanQuantities[rowNum] !== null) {
+            detailInput.inspectionPlanQuantity = inspectionPlanQuantities[rowNum];
+        }
+        if (inspectionPlanTimes[rowNum] !== null) {
+            detailInput.inspectionPlanTime = inspectionPlanTimes[rowNum];
+        }
+        if (inspectionResultQuantities[rowNum] !== null) {
+            detailInput.inspectionResultQuantity = inspectionResultQuantities[rowNum];
+        }
+        if (inspectionResultTimes[rowNum] !== null) {
+            detailInput.inspectionResultTime = inspectionResultTimes[rowNum];
+        }
+        if (boxCounts[rowNum] !== null) {
+            detailInput.boxCount = boxCounts[rowNum];
+        }
 
         try {
             await client.graphql({
