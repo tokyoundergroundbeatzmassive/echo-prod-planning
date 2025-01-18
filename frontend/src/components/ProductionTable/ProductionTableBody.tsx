@@ -136,7 +136,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseInt(content, 10) || 0;
+                            const numberValue = content.trim() === '' ? null : parseInt(content, 10);
                             setProcessPlanQuantities(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
@@ -151,7 +151,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseFloat(content) || 0;
+                            const numberValue = content.trim() === '' ? null : parseFloat(content);
                             setProcessPlanTimes(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
@@ -166,7 +166,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseInt(content, 10) || 0;
+                            const numberValue = content.trim() === '' ? null : parseInt(content, 10);
                             setProcessResultQuantities(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
@@ -181,7 +181,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseFloat(content) || 0;
+                            const numberValue = content.trim() === '' ? null : parseFloat(content);
                             setProcessResultTimes(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
@@ -196,7 +196,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseInt(content, 10) || 0;
+                            const numberValue = content.trim() === '' ? null : parseInt(content, 10);
                             setInspectionPlanQuantities(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
@@ -211,7 +211,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseFloat(content) || 0;
+                            const numberValue = content.trim() === '' ? null : parseFloat(content);
                             setInspectionPlanTimes(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
@@ -226,7 +226,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseInt(content, 10) || 0;
+                            const numberValue = content.trim() === '' ? null : parseInt(content, 10);
                             setInspectionResultQuantities(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
@@ -241,7 +241,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseFloat(content) || 0;
+                            const numberValue = content.trim() === '' ? null : parseFloat(content);
                             setInspectionResultTimes(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
@@ -256,7 +256,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         suppressContentEditableWarning={true}
                         onBlur={(e) => {
                             const content = e.currentTarget?.textContent ?? '';
-                            const numberValue = parseInt(content, 10) || 0;
+                            const numberValue = content.trim() === '' ? null : parseInt(content, 10);
                             setBoxCounts(prev => ({
                                 ...prev,
                                 [rowNum]: numberValue
