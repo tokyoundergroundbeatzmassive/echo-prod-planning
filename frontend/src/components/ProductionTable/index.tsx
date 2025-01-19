@@ -1,4 +1,5 @@
-import { generateClient, GraphQLResult } from 'aws-amplify/api';
+import { GraphQLResult } from '@aws-amplify/api-graphql';
+import { generateClient } from 'aws-amplify/api';
 import React, { useEffect, useRef, useState } from 'react';
 import { useProductionData } from '../../hooks/useProductionData';
 import { formatDateToString, generateDateRange, parseStringToDate } from '../../utils/dateUtils';
@@ -352,7 +353,15 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
                         }
                     }
                 `
-            });
+            }) as GraphQLResult<{
+                listEchoProdManagements: {
+                    items: Array<{
+                        orderNumber: string;
+                        deadline: string;
+                        processOptions: string;
+                    }>;
+                };
+            }>;
 
             const existingRecords = existingResult.data?.listEchoProdManagements?.items || [];
             const existingDeadline = existingRecords[0]?.deadline;
@@ -494,7 +503,11 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
                         }
                     }
                 `
-            });
+            }) as GraphQLResult<{
+                getEchoProdManagement: {
+                    orderNumber: string;
+                } | null;
+            }>;
 
             const mutation = existingResult.data?.getEchoProdManagement
                 ? `
