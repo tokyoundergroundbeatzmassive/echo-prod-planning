@@ -141,19 +141,39 @@ const ProductionSchedule: React.FC = () => {
                             {dateRange.map((date, colIndex) => {
                                 const currentDate = new Date(date);
                                 const deadlineDate = parseDate(item.deadline);
-                                const isInRange = currentDate <= deadlineDate;
+                                const startDate = parseDate(item.orderNumber.split('-')[1]);
+                                const isInRange = currentDate >= startDate && currentDate <= deadlineDate;
+                                const isStart = currentDate.getTime() === startDate.getTime();
+                                const isEnd = currentDate.getTime() === deadlineDate.getTime();
 
                                 return (
                                     <div
                                         key={colIndex}
                                         className={`bg-white p-2 border-b flex items-center justify-center
-                                            ${isInRange ? 'bg-blue-100' : ''}`}
+                                            ${isInRange ? 'bg-blue-50' : ''}`}
                                     >
                                         {isInRange && (
-                                            <>
-                                                {currentDate.getTime() === deadlineDate.getTime() && '|'}
-                                                {currentDate.getTime() < deadlineDate.getTime() && '─'}
-                                            </>
+                                            <div className="w-full flex items-center justify-center relative">
+                                                {isStart ? (
+                                                    <div className="w-full h-1 bg-blue-500 flex items-center">
+                                                        <div className="absolute left-0 w-0 h-0 
+                                                            border-t-[6px] border-t-transparent 
+                                                            border-r-[10px] border-r-blue-500
+                                                            border-b-[6px] border-b-transparent"
+                                                        />
+                                                    </div>
+                                                ) : isEnd ? (
+                                                    <div className="w-full h-1 bg-blue-500 flex items-center">
+                                                        <div className="absolute right-0 w-0 h-0 
+                                                            border-t-[6px] border-t-transparent 
+                                                            border-l-[10px] border-l-blue-500
+                                                            border-b-[6px] border-b-transparent"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-full h-1 bg-blue-500" />
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 );
