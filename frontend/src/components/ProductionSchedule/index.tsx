@@ -123,14 +123,6 @@ const ProductionSchedule: React.FC<ProductionScheduleProps> = ({ onCellClick }) 
         onCellClick(date, item.processOptions);
     };
 
-    // 日付フォーマット用の関数を追加
-    const formatDateToString = (date: Date): string => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}${month}${day}`;
-    };
-
     return (
         <div className="mt-8 overflow-x-auto">
             <div className="min-w-full">
