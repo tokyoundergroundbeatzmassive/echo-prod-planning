@@ -12,18 +12,6 @@ interface ProductionTableProps {
     initialProcess?: string;
 }
 
-interface GetAllRecordsQuery {
-    listEchoProdManagements: {
-        items: Array<{
-            orderNumber: string;
-            processOptions: string;
-            deadline: string;
-            productName: string;
-            orderQuantity: number;
-        }>;
-    };
-}
-
 const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initialProcess }) => {
     const [selectedProcess, setSelectedProcess] = useState(initialProcess || 'ラミネート');
     const { productionData, isLoading, error } = useProductionData(selectedDate, selectedProcess);
@@ -116,95 +104,6 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
         }));
         setIsCalendarOpen(false);
         setActiveDeadlineRow(null);
-    };
-
-    // 納期変更時の処理を追加
-    const handleDeadlineChange = async (rowNum: string, oldDeadline: string, newDeadline: string) => {
-        const orderNumber = orderNumbers[rowNum];
-        if (!orderNumber) return;
-
-        const baseOrderNumber = orderNumber.split('-')[0];
-
-        try {
-            // 同じbaseOrderNumberを持つ全てのレコードを取得
-            const result = await client.graphql({
-                query: `
-                    query GetAllRecords {
-                        listEchoProdManagements(
-                            filter: {
-                                orderNumber: { beginsWith: "${baseOrderNumber}-" }
-                            }
-                        ) {
-                            items {
-                                orderNumber
-                                processOptions
-                                deadline
-                            }
-                        }
-                    }
-                `
-            }) as GraphQLResult<GetAllRecordsQuery>;
-
-            const items = result.data?.listEchoProdManagements.items || [];
-            // console.log('対象レコード:', items);
-
-            if (parseInt(newDeadline) < parseInt(oldDeadline)) {
-                // 納期が短縮された場合の処理
-                for (const item of items) {
-                    const recordDate = item.orderNumber.split('-')[1];
-                    if (recordDate) {
-                        if (parseInt(recordDate) > parseInt(newDeadline)) {
-                            // 新しい納期より後のレコードは削除
-                            // console.log('削除対象:', item.orderNumber);
-                            await client.graphql({
-                                query: `
-                                    mutation DeleteEchoProdManagement {
-                                        deleteEchoProdManagement(
-                                            input: {
-                                                orderNumber: "${item.orderNumber}",
-                                                processOptions: "${item.processOptions}"
-                                            }
-                                        ) {
-                                            orderNumber
-                                        }
-                                    }
-                                `
-                            });
-                        } else {
-                            // 残すレコードは納期を更新
-                            await updateDeadline(item, newDeadline);
-                        }
-                    }
-                }
-            } else {
-                // 納期が延長された場合は全レコードの納期を更新
-                for (const item of items) {
-                    await updateDeadline(item, newDeadline);
-                }
-            }
-        } catch (error) {
-            console.error('納期変更処理に失敗:', error);
-        }
-    };
-
-    // 納期更新用のヘルパー関数
-    const updateDeadline = async (item: { orderNumber: string; processOptions: string }, newDeadline: string) => {
-        // console.log('更新対象:', item.orderNumber);
-        await client.graphql({
-            query: `
-                mutation UpdateEchoProdManagement {
-                    updateEchoProdManagement(
-                        input: {
-                            orderNumber: "${item.orderNumber}",
-                            processOptions: "${item.processOptions}",
-                            deadline: "${newDeadline}"
-                        }
-                    ) {
-                        orderNumber
-                    }
-                }
-            `
-        });
     };
 
     // 保存処理
