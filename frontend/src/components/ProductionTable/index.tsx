@@ -24,12 +24,6 @@ interface GetAllRecordsQuery {
     };
 }
 
-interface GetExistingRecordQuery {
-    getEchoProdManagement: {
-        deadline: string;
-    } | null;
-}
-
 const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initialProcess }) => {
     const [selectedProcess, setSelectedProcess] = useState(initialProcess || 'ラミネート');
     const { productionData, isLoading, error } = useProductionData(selectedDate, selectedProcess);
