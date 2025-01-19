@@ -6,11 +6,20 @@ import ProductionTable from './components/ProductionTable';
 const App: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState<'schedule' | 'table'>('schedule');
+  const [selectedProcess, setSelectedProcess] = useState<string>('');
+
+  // スケジュールからの遷移用関数
+  const handleScheduleClick = (date: Date, process: string) => {
+    // 日付を更新（Calendarコンポーネントの表示も更新される）
+    setSelectedDate(new Date(date));  // 新しいDateオブジェクトを作成
+    setSelectedProcess(process);
+    setActiveTab('table');
+  };
 
   return (
     <div className="p-4">
       <div className="container mx-auto">
-        <Calendar onDateSelect={setSelectedDate} />
+        <Calendar onDateSelect={setSelectedDate} selectedDate={selectedDate} />
 
         {/* タブ切り替えボタン */}
         <div className="flex gap-4 mt-4 mb-2">
@@ -36,9 +45,12 @@ const App: React.FC = () => {
 
         {/* タブコンテンツ */}
         {activeTab === 'schedule' ? (
-          <ProductionSchedule />
+          <ProductionSchedule onCellClick={handleScheduleClick} />
         ) : (
-          <ProductionTable selectedDate={selectedDate} />
+          <ProductionTable
+            selectedDate={selectedDate}
+            initialProcess={selectedProcess}
+          />
         )}
       </div>
     </div>

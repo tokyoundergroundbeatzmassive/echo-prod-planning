@@ -15,7 +15,11 @@ interface ListEchoProdManagementsQuery {
     }
 }
 
-const ProductionSchedule: React.FC = () => {
+interface ProductionScheduleProps {
+    onCellClick: (date: Date, process: string) => void;
+}
+
+const ProductionSchedule: React.FC<ProductionScheduleProps> = ({ onCellClick }) => {
     const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
     const [dateRange, setDateRange] = useState<Date[]>([]);
     const client = generateClient();
@@ -114,6 +118,19 @@ const ProductionSchedule: React.FC = () => {
         return new Date(year, month, day);
     };
 
+    // クリックハンドラーを追加
+    const handleCellClick = (date: Date, item: ScheduleItem) => {
+        onCellClick(date, item.processOptions);
+    };
+
+    // 日付フォーマット用の関数を追加
+    const formatDateToString = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}${month}${day}`;
+    };
+
     return (
         <div className="mt-8 overflow-x-auto">
             <div className="min-w-full">
@@ -155,7 +172,8 @@ const ProductionSchedule: React.FC = () => {
                                 return (
                                     <div
                                         key={colIndex}
-                                        className={`bg-white border-b flex items-center justify-center
+                                        onClick={() => handleCellClick(currentDate, item)}  // クリックハンドラーを追加
+                                        className={`bg-white border-b flex items-center justify-center cursor-pointer  // cursor-pointerを追加
                                             ${isInRange ? 'bg-blue-50' : ''}`}
                                     >
                                         {isInRange && (

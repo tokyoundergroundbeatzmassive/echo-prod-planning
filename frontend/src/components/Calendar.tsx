@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface CalendarDate {
     year: number;
@@ -8,19 +8,26 @@ interface CalendarDate {
 
 interface CalendarProps {
     onDateSelect: (date: Date) => void;
+    selectedDate: Date;
 }
 
-const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
+const Calendar: React.FC<CalendarProps> = ({ onDateSelect, selectedDate }) => {
     const [currentDate, setCurrentDate] = useState<CalendarDate>(() => {
-        const today = new Date();
         return {
-            year: today.getFullYear(),
-            month: today.getMonth(),
-            date: today.getDate()
+            year: selectedDate.getFullYear(),
+            month: selectedDate.getMonth(),
+            date: selectedDate.getDate()
         };
     });
-    const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        setCurrentDate({
+            year: selectedDate.getFullYear(),
+            month: selectedDate.getMonth(),
+            date: selectedDate.getDate()
+        });
+    }, [selectedDate]);
 
     const renderCalendar = () => {
         const firstDay = new Date(currentDate.year, currentDate.month, 1);
@@ -88,7 +95,6 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect }) => {
 
     const handleDateSelect = (date: number) => {
         const newDate = new Date(currentDate.year, currentDate.month, date);
-        setSelectedDate(newDate);
         onDateSelect(newDate);
         setIsOpen(false);
     };

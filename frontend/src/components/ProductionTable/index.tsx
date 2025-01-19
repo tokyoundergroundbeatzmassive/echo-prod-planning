@@ -8,10 +8,11 @@ import { ProductionTableHeader } from './ProductionTableHeader';
 
 interface ProductionTableProps {
     selectedDate: Date;
+    initialProcess?: string;
 }
 
-const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
-    const [selectedProcess, setSelectedProcess] = useState('ラミネート');
+const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initialProcess }) => {
+    const [selectedProcess, setSelectedProcess] = useState(initialProcess || 'ラミネート');
     const { productionData, isLoading, error } = useProductionData(selectedDate, selectedProcess);
     const client = generateClient();
 
@@ -180,6 +181,12 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate }) => {
         setBoxCounts(newBoxCounts);
         setSelectedProcess(productionData[0]?.processOptions || 'ラミネート');
     }, [productionData]);
+
+    useEffect(() => {
+        if (initialProcess) {
+            setSelectedProcess(initialProcess);
+        }
+    }, [initialProcess]);
 
     // 日付変更時のクリーンアップ
     useEffect(() => {
