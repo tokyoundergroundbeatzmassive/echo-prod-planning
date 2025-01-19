@@ -118,7 +118,7 @@ const ProductionSchedule: React.FC = () => {
         <div className="mt-8 overflow-x-auto">
             <div className="min-w-full">
                 <div className="grid" style={{
-                    gridTemplateColumns: `120px 120px 120px repeat(${dateRange.length}, minmax(60px, 1fr))`,
+                    gridTemplateColumns: `120px 120px 120px repeat(${dateRange.length}, minmax(40px, 1fr))`,
                     gap: '1px',
                     backgroundColor: '#e5e7eb'
                 }}>
@@ -155,25 +155,27 @@ const ProductionSchedule: React.FC = () => {
                                 return (
                                     <div
                                         key={colIndex}
-                                        className={`bg-white p-2 border-b flex items-center justify-center
+                                        className={`bg-white border-b flex items-center justify-center
                                             ${isInRange ? 'bg-blue-50' : ''}`}
                                     >
                                         {isInRange && (
-                                            <div className="w-full flex items-center justify-center relative">
+                                            <div className="w-full h-full flex items-center justify-center relative px-0">
                                                 {isStart ? (
-                                                    <div className="w-full h-1 bg-blue-500 flex items-center">
+                                                    <div className="w-full flex items-center relative">
+                                                        <div className="w-full h-1 bg-blue-500" />
                                                         <div className="absolute left-0 w-0 h-0 
-                                                            border-t-[6px] border-t-transparent 
-                                                            border-r-[10px] border-r-blue-500
-                                                            border-b-[6px] border-b-transparent"
+                                                            border-t-[10px] border-r-blue-500 
+                                                            border-r-[8px] border-r-blue-500
+                                                            border-b-[10px] border-r-blue-500"
                                                         />
                                                     </div>
                                                 ) : isEnd ? (
-                                                    <div className="w-full h-1 bg-blue-500 flex items-center">
+                                                    <div className="w-full flex items-center relative">
+                                                        <div className="w-full h-1 bg-blue-500" />
                                                         <div className="absolute right-0 w-0 h-0 
-                                                            border-t-[6px] border-t-transparent 
-                                                            border-l-[10px] border-l-blue-500
-                                                            border-b-[6px] border-b-transparent"
+                                                            border-t-[10px] border-r-blue-500 
+                                                            border-l-[8px] border-l-blue-500
+                                                            border-b-[10px] border-r-blue-500"
                                                         />
                                                     </div>
                                                 ) : (
