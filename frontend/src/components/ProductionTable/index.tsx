@@ -128,30 +128,31 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
 
         const baseOrderNumber = orderNumber.split('-')[0];
 
-        if (parseInt(newDeadline) < parseInt(oldDeadline)) {
-            try {
-                const result = await client.graphql({
-                    query: `
-                        query GetAllRecords {
-                            listEchoProdManagements(
-                                filter: {
-                                    orderNumber: { beginsWith: "${baseOrderNumber}-" }
-                                }
-                            ) {
-                                items {
-                                    orderNumber
-                                    processOptions
-                                    deadline
-                                }
+        try {
+            // 同じbaseOrderNumberを持つ全てのレコードを取得
+            const result = await client.graphql({
+                query: `
+                    query GetAllRecords {
+                        listEchoProdManagements(
+                            filter: {
+                                orderNumber: { beginsWith: "${baseOrderNumber}-" }
+                            }
+                        ) {
+                            items {
+                                orderNumber
+                                processOptions
+                                deadline
                             }
                         }
-                    `
-                }) as GraphQLResult<GetAllRecordsQuery>;
+                    }
+                `
+            }) as GraphQLResult<GetAllRecordsQuery>;
 
-                const items = result.data?.listEchoProdManagements.items || [];
-                console.log('対象レコード:', items);
+            const items = result.data?.listEchoProdManagements.items || [];
+            console.log('対象レコード:', items);
 
-                // 全てのレコードに対して処理
+            if (parseInt(newDeadline) < parseInt(oldDeadline)) {
+                // 納期が短縮された場合の処理
                 for (const item of items) {
                     const recordDate = item.orderNumber.split('-')[1];
                     if (recordDate) {
@@ -174,29 +175,39 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
                             });
                         } else {
                             // 残すレコードは納期を更新
-                            console.log('更新対象:', item.orderNumber);
-                            await client.graphql({
-                                query: `
-                                    mutation UpdateEchoProdManagement {
-                                        updateEchoProdManagement(
-                                            input: {
-                                                orderNumber: "${item.orderNumber}",
-                                                processOptions: "${item.processOptions}",
-                                                deadline: "${newDeadline}"
-                                            }
-                                        ) {
-                                            orderNumber
-                                        }
-                                    }
-                                `
-                            });
+                            await updateDeadline(item, newDeadline);
                         }
                     }
                 }
-            } catch (error) {
-                console.error('納期変更処理に失敗:', error);
+            } else {
+                // 納期が延長された場合は全レコードの納期を更新
+                for (const item of items) {
+                    await updateDeadline(item, newDeadline);
+                }
             }
+        } catch (error) {
+            console.error('納期変更処理に失敗:', error);
         }
+    };
+
+    // 納期更新用のヘルパー関数
+    const updateDeadline = async (item: { orderNumber: string; processOptions: string }, newDeadline: string) => {
+        console.log('更新対象:', item.orderNumber);
+        await client.graphql({
+            query: `
+                mutation UpdateEchoProdManagement {
+                    updateEchoProdManagement(
+                        input: {
+                            orderNumber: "${item.orderNumber}",
+                            processOptions: "${item.processOptions}",
+                            deadline: "${newDeadline}"
+                        }
+                    ) {
+                        orderNumber
+                    }
+                }
+            `
+        });
     };
 
     // 保存処理
