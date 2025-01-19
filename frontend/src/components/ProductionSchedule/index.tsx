@@ -54,8 +54,12 @@ const ProductionSchedule: React.FC<ProductionScheduleProps> = ({ onCellClick }) 
                 // 重複を除去（同じorderNumberの異なる日付のエントリを統合）
                 const uniqueItems = sortedItems.reduce((acc: ScheduleItem[], item: any) => {
                     const baseOrderNumber = item.orderNumber.split('-')[0];
-                    const existing = acc.find(i => i.orderNumber.split('-')[0] === baseOrderNumber);
-                    if (!existing && item.deadline) {  // 最初に見つかったレコードのみを採用
+                    const processOption = item.processOptions;
+                    const existing = acc.find(i =>
+                        i.orderNumber.split('-')[0] === baseOrderNumber &&
+                        i.processOptions === processOption
+                    );
+                    if (!existing && item.deadline) {
                         acc.push(item);
                     }
                     return acc;
