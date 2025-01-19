@@ -17,6 +17,8 @@ interface GetAllRecordsQuery {
             orderNumber: string;
             processOptions: string;
             deadline: string;
+            productName: string;
+            orderQuantity: number;
         }>;
     };
 }
@@ -149,7 +151,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
             }) as GraphQLResult<GetAllRecordsQuery>;
 
             const items = result.data?.listEchoProdManagements.items || [];
-            console.log('対象レコード:', items);
+            // console.log('対象レコード:', items);
 
             if (parseInt(newDeadline) < parseInt(oldDeadline)) {
                 // 納期が短縮された場合の処理
@@ -158,7 +160,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
                     if (recordDate) {
                         if (parseInt(recordDate) > parseInt(newDeadline)) {
                             // 新しい納期より後のレコードは削除
-                            console.log('削除対象:', item.orderNumber);
+                            // console.log('削除対象:', item.orderNumber);
                             await client.graphql({
                                 query: `
                                     mutation DeleteEchoProdManagement {
@@ -192,7 +194,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
 
     // 納期更新用のヘルパー関数
     const updateDeadline = async (item: { orderNumber: string; processOptions: string }, newDeadline: string) => {
-        console.log('更新対象:', item.orderNumber);
+        // console.log('更新対象:', item.orderNumber);
         await client.graphql({
             query: `
                 mutation UpdateEchoProdManagement {
@@ -317,9 +319,21 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
 
         const baseOrderNumber = orderNumber.split('-')[0];
         const deadline = deadlines[rowNum];
+        const productName = productNames[rowNum];
+        const orderQuantity = orderQuantities[rowNum];
+
+        if (!productName) {
+            alert(`行 ${rowNum} の品名が入力されていません`);
+            return false;
+        }
+
+        if (orderQuantity === null || orderQuantity === undefined) {
+            alert(`行 ${rowNum} の受注数が入力されていません`);
+            return false;
+        }
 
         try {
-            // 既存のレコードの納期を確認
+            // まず既存レコードの納期を確認
             const existingResult = await client.graphql({
                 query: `
                     query GetExistingRecord {
@@ -335,70 +349,80 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
 
             const existingDeadline = existingResult.data?.getEchoProdManagement?.deadline;
 
-            // 納期が変更された場合
+            // 納期が変更された場合は全レコードを更新
             if (existingDeadline && existingDeadline !== deadline) {
                 await handleDeadlineChange(rowNum, existingDeadline, deadline);
             }
 
-            // 以降は通常の保存処理
-            const productName = productNames[rowNum];
-            if (!productName) {
-                alert(`行 ${rowNum} の品名が入力されていません`);
-                return false;
+            // 全ての関連レコードを取得して更新
+            const allRecordsResult = await client.graphql({
+                query: `
+                    query GetAllRecords {
+                        listEchoProdManagements(
+                            filter: {
+                                orderNumber: { beginsWith: "${baseOrderNumber}-" }
+                            }
+                        ) {
+                            items {
+                                orderNumber
+                                processOptions
+                            }
+                        }
+                    }
+                `
+            }) as GraphQLResult<GetAllRecordsQuery>;
+
+            const existingRecords = allRecordsResult.data?.listEchoProdManagements.items || [];
+
+            // 既存レコードの更新
+            for (const record of existingRecords) {
+                await client.graphql({
+                    query: `
+                        mutation UpdateEchoProdManagement {
+                            updateEchoProdManagement(
+                                input: {
+                                    orderNumber: "${record.orderNumber}",
+                                    processOptions: "${record.processOptions}",
+                                    deadline: "${deadline}",
+                                    productName: "${productName}",
+                                    orderQuantity: ${orderQuantity}
+                                }
+                            ) {
+                                orderNumber
+                            }
+                        }
+                    `
+                });
             }
 
-            const orderQuantity = orderQuantities[rowNum];
-            if (orderQuantity === null || orderQuantity === undefined) {
-                alert(`行 ${rowNum} の受注数が入力されていません`);
-                return false;
-            }
-
+            // 新規レコードの作成
             const dateRange = generateDateRange(parseStringToDate(currentDateStr), parseStringToDate(deadline));
-
             for (const date of dateRange) {
                 const dateStr = formatDateToString(date);
-                const uniqueOrderNumber = `${orderNumber}-${dateStr}`;
+                const uniqueOrderNumber = `${baseOrderNumber}-${dateStr}`;
 
-                const baseInput = {
-                    orderNumber: uniqueOrderNumber,
-                    processOptions: selectedProcess,
-                    deadline: deadline,
-                    productName: productName,
-                    orderQuantity: orderQuantity
-                };
-
-                try {
+                // 既存レコードに含まれていない日付のみ新規作成
+                if (!existingRecords.some(record => record.orderNumber === uniqueOrderNumber)) {
                     await client.graphql({
                         query: `
-                            mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
-                                updateEchoProdManagement(input: $input) {
+                            mutation CreateEchoProdManagement {
+                                createEchoProdManagement(
+                                    input: {
+                                        orderNumber: "${uniqueOrderNumber}",
+                                        processOptions: "${selectedProcess}",
+                                        deadline: "${deadline}",
+                                        productName: "${productName}",
+                                        orderQuantity: ${orderQuantity}
+                                    }
+                                ) {
                                     orderNumber
-                                    processOptions
-                                    orderQuantity
-                                    deadline
-                                    productName
                                 }
                             }
-                        `,
-                        variables: { input: baseInput }
-                    });
-                } catch (error) {
-                    await client.graphql({
-                        query: `
-                            mutation CreateEchoProdManagement($input: CreateEchoProdManagementInput!) {
-                                createEchoProdManagement(input: $input) {
-                                    orderNumber
-                                    processOptions
-                                    orderQuantity
-                                    deadline
-                                    productName
-                                }
-                            }
-                        `,
-                        variables: { input: baseInput }
+                        `
                     });
                 }
             }
+
             return true;
         } catch (error) {
             console.error('保存エラー:', error);
