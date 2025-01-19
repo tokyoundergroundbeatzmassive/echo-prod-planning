@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 interface ScheduleItem {
     orderNumber: string;
+    processOptions: string;
     deadline: string;
     productName: string;
 }
@@ -28,6 +29,7 @@ const ProductionSchedule: React.FC = () => {
                             listEchoProdManagements {
                                 items {
                                     orderNumber
+                                    processOptions
                                     deadline
                                     productName
                                 }
@@ -49,7 +51,7 @@ const ProductionSchedule: React.FC = () => {
                 const uniqueItems = sortedItems.reduce((acc: ScheduleItem[], item: any) => {
                     const baseOrderNumber = item.orderNumber.split('-')[0];
                     const existing = acc.find(i => i.orderNumber.split('-')[0] === baseOrderNumber);
-                    if (!existing && item.deadline) {
+                    if (!existing && item.deadline) {  // 最初に見つかったレコードのみを採用
                         acc.push(item);
                     }
                     return acc;
@@ -116,12 +118,13 @@ const ProductionSchedule: React.FC = () => {
         <div className="mt-8 overflow-x-auto">
             <div className="min-w-full">
                 <div className="grid" style={{
-                    gridTemplateColumns: `120px 200px repeat(${dateRange.length}, minmax(60px, 1fr))`,
+                    gridTemplateColumns: `120px 120px 120px repeat(${dateRange.length}, minmax(60px, 1fr))`,
                     gap: '1px',
                     backgroundColor: '#e5e7eb'
                 }}>
                     {/* ヘッダー行 */}
                     <div className="bg-gray-100 p-2 font-bold">受注番号</div>
+                    <div className="bg-gray-100 p-2 font-bold">工程</div>
                     <div className="bg-gray-100 p-2 font-bold">製品</div>
                     {dateRange.map((date, index) => (
                         <div key={index} className="bg-gray-100 p-2 text-center">
@@ -134,6 +137,9 @@ const ProductionSchedule: React.FC = () => {
                         <React.Fragment key={rowIndex}>
                             <div className="bg-white p-2 border-b">
                                 {item.orderNumber.split('-')[0]}
+                            </div>
+                            <div className="bg-white p-2 border-b">
+                                {item.processOptions}
                             </div>
                             <div className="bg-white p-2 border-b">
                                 {item.productName}
