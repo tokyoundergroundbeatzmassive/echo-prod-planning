@@ -1,9 +1,9 @@
 import { GraphQLResult } from '@aws-amplify/api-graphql';
 import { generateClient } from 'aws-amplify/api';
 import React, { useEffect, useRef, useState } from 'react';
-import { useProductionData } from '../../hooks/useProductionData';
 import { formatDateToString, generateDateRange, parseStringToDate } from '../../utils/dateUtils';
 import { DatePicker } from './DatePicker';
+import { useProductionData } from './hooks/useProductionData';
 import { ProductionTableBody } from './ProductionTableBody';
 import { ProductionTableHeader } from './ProductionTableHeader';
 
