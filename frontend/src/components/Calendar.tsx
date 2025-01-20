@@ -131,17 +131,53 @@ const Calendar: React.FC<CalendarProps> = ({ onDateSelect, selectedDate }) => {
         );
     };
 
+    // 1日前へ移動する関数
+    const prevDay = () => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(selectedDate.getDate() - 1);
+        onDateSelect(newDate);
+    };
+
+    // 1日後へ移動する関数
+    const nextDay = () => {
+        const newDate = new Date(selectedDate);
+        newDate.setDate(selectedDate.getDate() + 1);
+        onDateSelect(newDate);
+    };
+
+    // 曜日を取得する関数
+    const getWeekDay = (date: Date): string => {
+        const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+        return weekDays[date.getDay()];
+    };
+
     return (
         <div className="date-selector relative">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-                日付選択
-            </button>
-            <h2 className="text-xl font-bold my-4">
-                {selectedDate.getFullYear()}年 {selectedDate.getMonth() + 1}月 {selectedDate.getDate()}日の生産計画
-            </h2>
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                    日付選択
+                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={prevDay}
+                        className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded"
+                    >
+                        &lt;
+                    </button>
+                    <h2 className="text-xl font-bold">
+                        {selectedDate.getFullYear()}年 {selectedDate.getMonth() + 1}月 {selectedDate.getDate()}日（{getWeekDay(selectedDate)}）の生産計画
+                    </h2>
+                    <button
+                        onClick={nextDay}
+                        className="bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded"
+                    >
+                        &gt;
+                    </button>
+                </div>
+            </div>
             {isOpen && (
                 <div className="absolute bg-white shadow-lg rounded-lg p-4 z-10">
                     {renderCalendar()}
