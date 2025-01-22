@@ -164,13 +164,22 @@ const ProductionSchedule: React.FC<ProductionScheduleProps> = ({ onCellClick }) 
                                 const isInRange = currentDate >= startDate && currentDate <= deadlineDate;
                                 const isStart = currentDate.getTime() === startDate.getTime();
                                 const isEnd = currentDate.getTime() === deadlineDate.getTime();
+                                // 現在の日付かどうかをチェック
+                                const isToday = currentDate.getDate() === new Date().getDate() &&
+                                    currentDate.getMonth() === new Date().getMonth() &&
+                                    currentDate.getFullYear() === new Date().getFullYear();
 
                                 return (
                                     <div
                                         key={colIndex}
-                                        onClick={() => handleCellClick(currentDate, item)}  // クリックハンドラーを追加
-                                        className={`bg-white border-b flex items-center justify-center cursor-pointer  // cursor-pointerを追加
-                                            ${isInRange ? 'bg-blue-50' : ''}`}
+                                        onClick={() => handleCellClick(currentDate, item)}
+                                        className={`
+                                            bg-white border-b 
+                                            flex items-center justify-center 
+                                            cursor-pointer
+                                            ${isInRange ? 'bg-blue-50' : ''}
+                                            ${isToday ? 'bg-yellow-100' : ''}
+                                        `}
                                     >
                                         {isInRange && (
                                             <div className="w-full h-full flex items-center justify-center relative px-0">
