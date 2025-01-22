@@ -228,6 +228,20 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
                 return false;
             }
 
+            // 納期日の入力チェックを追加
+            if (!deadline) {
+                alert(`行 ${rowNum} の納期日が入力されていません`);
+                return false;
+            }
+
+            // 納期日が現在の日付より前の場合はエラー
+            const deadlineDate = parseStringToDate(deadline);
+            const currentDate = parseStringToDate(currentDateStr);
+            if (deadlineDate < currentDate) {
+                alert(`行 ${rowNum} の納期日が現在の日付より前になっています`);
+                return false;
+            }
+
             // まず既存レコードの納期を確認（同じprocessOptionsのみ）
             const existingResult = await client.graphql({
                 query: `
