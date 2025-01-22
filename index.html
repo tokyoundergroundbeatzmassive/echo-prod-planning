@@ -5,9 +5,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>生産計画カレンダー</title>
-    <script type="module">
-        // 環境変数を取得
-        const authPassword = import.meta.env.VITE_AUTH_PASSWORD;
+    <script>
+        // 環境変数をグローバル変数として定義
+        window.ENV = {
+            AUTH_PASSWORD: "%VITE_AUTH_PASSWORD%"
+        };
 
         // ログイン状態をチェック
         function checkAuth() {
@@ -15,7 +17,7 @@
             if (!isAuthenticated) {
                 const password = prompt('パスワードを入力してください:');
 
-                if (password === authPassword) {
+                if (password === window.ENV.AUTH_PASSWORD) {
                     sessionStorage.setItem('isAuthenticated', 'true');
                 } else {
                     alert('認証に失敗しました');
