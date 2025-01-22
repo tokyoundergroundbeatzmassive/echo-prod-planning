@@ -1,12 +1,21 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, Plugin } from 'vite'
+
+// カスタムプラグインを作成して環境変数を注入
+function injectEnvPlugin(): Plugin {
+  return {
+    name: 'inject-env',
+    transformIndexHtml(html) {
+      return html.replace(
+        '<!--app-auth-password-->',
+        process.env.VITE_AUTH_PASSWORD || ''
+      )
+    }
+  }
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), injectEnvPlugin()],
   base: './', // GitHub Pages用に相対パスを設定
-  define: {
-    // HTMLファイル内の環境変数プレースホルダーを置換
-    '%VITE_AUTH_PASSWORD%': JSON.stringify(process.env.VITE_AUTH_PASSWORD)
-  }
 })
