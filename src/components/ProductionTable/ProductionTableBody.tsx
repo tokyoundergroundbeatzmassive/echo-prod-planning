@@ -87,10 +87,12 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                         {rowNum}
                     </td>
                     <td
-                        className="border p-1"
-                        contentEditable={true}
+                        className={`border p-1 ${orderNumbers[rowNum] ? 'bg-gray-50 text-gray-600 cursor-not-allowed' : 'hover:bg-blue-50'}`}
+                        contentEditable={!orderNumbers[rowNum]}
                         suppressContentEditableWarning={true}
+                        title={orderNumbers[rowNum] ? "注文番号は一度入力すると編集できません" : ""}
                         onBlur={(e) => {
+                            if (orderNumbers[rowNum]) return; // 既存の値がある場合は更新しない
                             const content = e.currentTarget?.textContent ?? '';
                             setOrderNumbers(prev => ({
                                 ...prev,

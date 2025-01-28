@@ -5,31 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>生産計画カレンダー</title>
-    <script>
-        // 環境変数をグローバル変数として定義
-        window.ENV = {
-            AUTH_PASSWORD: "<!--app-auth-password-->"
-        };
 
-        // ログイン状態をチェック
-        function checkAuth() {
-            const isAuthenticated = sessionStorage.getItem('isAuthenticated');
-            if (!isAuthenticated) {
-                const password = prompt('パスワードを入力してください:');
-
-                if (password === window.ENV.AUTH_PASSWORD) {
-                    sessionStorage.setItem('isAuthenticated', 'true');
-                } else {
-                    alert('認証に失敗しました');
-                    window.location.reload();
-                    return;
-                }
-            }
-        }
-
-        // ページロード時に認証チェック
-        window.onload = checkAuth;
-    </script>
 </head>
 
 <body>
