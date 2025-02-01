@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { formatDateToString, generateDateRange, parseStringToDate } from '../../utils/dateUtils';
 import { DatePicker } from './DatePicker';
 import { useProductionData } from './hooks/useProductionData';
+import { saveDetailData } from './mutation/saveIndividual';
 import { ProductionTableBody } from './ProductionTableBody';
 import { ProductionTableHeader } from './ProductionTableHeader';
 
@@ -116,9 +117,24 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
                 // 基本データの保存（納期までの一括登録）
                 const result = await saveRowData(rowNum, dateStr);
                 if (!result) return;
-
                 // 詳細データの保存（現在の日付のみ）
-                const detailResult = await saveDetailData(rowNum, dateStr);
+                const detailResult = await saveDetailData({
+                    rowNum,
+                    currentDateStr: dateStr,
+                    orderNumbers,
+                    selectedProcess,
+                    orderQuantities,
+                    processPlanQuantities,
+                    processPlanTimes,
+                    processResultQuantities,
+                    processResultTimes,
+                    inspectionPlanQuantities,
+                    inspectionPlanTimes,
+                    inspectionResultQuantities,
+                    inspectionResultTimes,
+                    boxCounts
+                });
+
                 if (!detailResult) return;
             }
 
@@ -351,112 +367,6 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
             return true;
         } catch (error) {
             console.error('保存エラー:', error);
-            return false;
-        }
-    };
-
-    // 個別データ更新用の関数
-    const saveDetailData = async (rowNum: string, currentDateStr: string) => {
-        const orderNumber = orderNumbers[rowNum];
-        if (!orderNumber) return false;
-
-        const uniqueOrderNumber = `${orderNumber}-${currentDateStr}`;
-
-        // 値がある場合のみオブジェクトに追加
-        const detailInput: any = {
-            orderNumber: uniqueOrderNumber,
-            processOptions: selectedProcess,
-        };
-
-        if (orderQuantities[rowNum] !== null) {
-            detailInput.orderQuantity = orderQuantities[rowNum];
-        }
-
-        // 各フィールドが存在する場合のみ追加
-        if (processPlanQuantities[rowNum] !== null) {
-            detailInput.processPlanQuantity = processPlanQuantities[rowNum];
-        }
-        if (processPlanTimes[rowNum] !== null) {
-            detailInput.processPlanTime = processPlanTimes[rowNum];
-        }
-        if (processResultQuantities[rowNum] !== null) {
-            detailInput.processResultQuantity = processResultQuantities[rowNum];
-        }
-        if (processResultTimes[rowNum] !== null) {
-            detailInput.processResultTime = processResultTimes[rowNum];
-        }
-        if (inspectionPlanQuantities[rowNum] !== null) {
-            detailInput.inspectionPlanQuantity = inspectionPlanQuantities[rowNum];
-        }
-        if (inspectionPlanTimes[rowNum] !== null) {
-            detailInput.inspectionPlanTime = inspectionPlanTimes[rowNum];
-        }
-        if (inspectionResultQuantities[rowNum] !== null) {
-            detailInput.inspectionResultQuantity = inspectionResultQuantities[rowNum];
-        }
-        if (inspectionResultTimes[rowNum] !== null) {
-            detailInput.inspectionResultTime = inspectionResultTimes[rowNum];
-        }
-        if (boxCounts[rowNum] !== null) {
-            detailInput.boxCount = boxCounts[rowNum];
-        }
-
-        try {
-            // まず既存レコードの確認
-            const existingResult = await client.graphql({
-                query: `
-                    query GetExistingRecord {
-                        getEchoProdManagement(
-                            orderNumber: "${uniqueOrderNumber}",
-                            processOptions: "${selectedProcess}"
-                        ) {
-                            orderNumber
-                        }
-                    }
-                `
-            }) as GraphQLResult<{
-                getEchoProdManagement: {
-                    orderNumber: string;
-                } | null;
-            }>;
-
-            const mutation = existingResult.data?.getEchoProdManagement
-                ? `
-                    mutation UpdateEchoProdManagement($input: UpdateEchoProdManagementInput!) {
-                        updateEchoProdManagement(input: $input) {
-                            orderNumber
-                            processOptions
-                            orderQuantity
-                            processPlanQuantity
-                            processPlanTime
-                            processResultQuantity
-                            processResultTime
-                            inspectionPlanQuantity
-                            inspectionPlanTime
-                            inspectionResultQuantity
-                            inspectionResultTime
-                            boxCount
-                        }
-                    }
-                `
-                : `
-                    mutation CreateEchoProdManagement($input: CreateEchoProdManagementInput!) {
-                        createEchoProdManagement(input: $input) {
-                            orderNumber
-                            processOptions
-                        }
-                    }
-                `;
-
-            await client.graphql({
-                query: mutation,
-                variables: { input: detailInput }
-            });
-
-            return true;
-        } catch (error) {
-            console.error('詳細データの保存エラー:', error);
-            alert('詳細データの保存中にエラーが発生しました');
             return false;
         }
     };
