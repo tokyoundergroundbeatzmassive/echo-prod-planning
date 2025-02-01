@@ -318,31 +318,35 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
 
             // 新規レコードの作成（現在の日付から納期までの範囲で）
             const dateRange = generateDateRange(parseStringToDate(currentDateStr), parseStringToDate(deadline));
-            for (const date of dateRange) {
-                const dateStr = formatDateToString(date);
-                const uniqueOrderNumber = `${baseOrderNumber}-${dateStr}`;
+            const createPromises = dateRange
+                .map(date => {
+                    const dateStr = formatDateToString(date);
+                    const uniqueOrderNumber = `${baseOrderNumber}-${dateStr}`;
 
-                // 既存レコードに含まれていない日付のみ新規作成
-                if (!existingRecords.some(record => record.orderNumber === uniqueOrderNumber)) {
-                    await client.graphql({
-                        query: `
-                            mutation CreateEchoProdManagement {
-                                createEchoProdManagement(
-                                    input: {
-                                        orderNumber: "${uniqueOrderNumber}",
-                                        processOptions: "${selectedProcess}",
-                                        deadline: "${deadline}",
-                                        productName: "${productName}",
-                                        orderQuantity: ${orderQuantity}
+                    if (!existingRecords.some(record => record.orderNumber === uniqueOrderNumber)) {
+                        return client.graphql({
+                            query: `
+                                mutation CreateEchoProdManagement {
+                                    createEchoProdManagement(
+                                        input: {
+                                            orderNumber: "${uniqueOrderNumber}",
+                                            processOptions: "${selectedProcess}",
+                                            deadline: "${deadline}",
+                                            productName: "${productName}",
+                                            orderQuantity: ${orderQuantity}
+                                        }
+                                    ) {
+                                        orderNumber
                                     }
-                                ) {
-                                    orderNumber
                                 }
-                            }
-                        `
-                    });
-                }
-            }
+                            `
+                        });
+                    }
+                    return null;
+                })
+                .filter(promise => promise !== null);
+
+            await Promise.all(createPromises);
 
             return true;
         } catch (error) {
