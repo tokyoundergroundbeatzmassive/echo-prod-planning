@@ -1,4 +1,3 @@
-import { generateClient } from 'aws-amplify/api';
 import React, { useEffect, useRef, useState } from 'react';
 import { formatDateToString } from '../../utils/dateUtils';
 import { DatePicker } from './DatePicker';
@@ -15,8 +14,10 @@ interface ProductionTableProps {
 
 const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initialProcess }) => {
     const [selectedProcess, setSelectedProcess] = useState(initialProcess || 'ラミネート');
-    const { productionData, isLoading, error } = useProductionData(selectedDate, selectedProcess);
-    const client = generateClient();
+    const { productionData, isLoading, error, refetch } = useProductionData(selectedDate, selectedProcess);
+    const handleDataDeleted = async () => {
+        await refetch();
+    };
 
     // 状態管理
     const [rowCount, setRowCount] = useState(10);
@@ -205,7 +206,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
         setInspectionResultQuantities(newInspectionResultQuantities);
         setInspectionResultTimes(newInspectionResultTimes);
         setBoxCounts(newBoxCounts);
-        setSelectedProcess(productionData[0]?.processOptions || 'ラミネート');
+        // setSelectedProcess(productionData[0]?.processOptions || 'ラミネート');
     }, [productionData]);
 
     useEffect(() => {
@@ -258,6 +259,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
                     inspectionResultQuantities={inspectionResultQuantities}
                     inspectionResultTimes={inspectionResultTimes}
                     boxCounts={boxCounts}
+                    selectedProcess={selectedProcess}
                     setOrderNumbers={setOrderNumbers}
                     setProductNames={setProductNames}
                     setOrderQuantities={setOrderQuantities}
@@ -273,6 +275,7 @@ const ProductionTable: React.FC<ProductionTableProps> = ({ selectedDate, initial
                     handleCellClick={handleCellClick}
                     addRow={addRow}
                     removeRow={removeRow}
+                    onDataDeleted={handleDataDeleted}
                 />
             </table>
 

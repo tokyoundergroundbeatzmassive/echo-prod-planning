@@ -1,6 +1,7 @@
 import React from 'react';
 import { AiOutlineMinusCircle, AiOutlinePlusCircle } from 'react-icons/ai';
 import { formatDate } from '../../utils/formatDate';
+import { deleteProductionRecords } from './mutations/deleteProductionRecords';
 
 interface ProductionTableBodyProps {
     rows: number[];
@@ -18,6 +19,7 @@ interface ProductionTableBodyProps {
     inspectionResultQuantities: { [key: number]: number };
     inspectionResultTimes: { [key: number]: number };
     boxCounts: { [key: number]: number };
+    selectedProcess: string;
     setOrderNumbers: (value: React.SetStateAction<{ [key: number]: string }>) => void;
     setProductNames: (value: React.SetStateAction<{ [key: number]: string }>) => void;
     handleCellClick: (event: React.MouseEvent<HTMLTableCellElement>, rowNum: number, isDeadlineCell: boolean) => void;
@@ -33,6 +35,7 @@ interface ProductionTableBodyProps {
     setInspectionResultQuantities: (value: React.SetStateAction<{ [key: number]: number }>) => void;
     setInspectionResultTimes: (value: React.SetStateAction<{ [key: number]: number }>) => void;
     setBoxCounts: (value: React.SetStateAction<{ [key: number]: number }>) => void;
+    onDataDeleted?: () => Promise<void>;
 }
 
 export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
@@ -51,6 +54,7 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
     inspectionResultQuantities,
     inspectionResultTimes,
     boxCounts,
+    selectedProcess,
     setOrderNumbers,
     setProductNames,
     handleCellClick,
@@ -65,7 +69,8 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
     setInspectionPlanTimes,
     setInspectionResultQuantities,
     setInspectionResultTimes,
-    setBoxCounts
+    setBoxCounts,
+    onDataDeleted
 }) => {
     return (
         <tbody>
@@ -81,6 +86,23 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
                                 <AiOutlineMinusCircle
                                     className="text-red-600 cursor-pointer hover:text-red-800"
                                     onClick={removeRow}
+                                />
+                            </div>
+                        )}
+                        {orderNumbers[rowNum] && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 flex gap-1 -ml-5">
+                                <AiOutlineMinusCircle
+                                    className="text-red-600 cursor-pointer hover:text-red-800"
+                                    onClick={async () => {
+                                        if (window.confirm('このレコードを削除してもよろしいですか？')) {
+                                            const baseOrderNumber = orderNumbers[rowNum].split('-')[0];
+                                            const result = await deleteProductionRecords(baseOrderNumber, selectedProcess);
+                                            if (result && onDataDeleted) {
+                                                await onDataDeleted();
+                                            }
+                                        }
+                                    }}
+                                    title="このレコードを削除"
                                 />
                             </div>
                         )}
@@ -276,4 +298,4 @@ export const ProductionTableBody: React.FC<ProductionTableBodyProps> = ({
             ))}
         </tbody>
     );
-}; 
+};
