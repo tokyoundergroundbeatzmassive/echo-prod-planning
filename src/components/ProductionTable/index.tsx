@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { formatDateToString } from '../../utils/dateUtils';
 import { DatePicker } from './DatePicker';
 import { useProductionData } from './hooks/useProductionData';
-import { saveDetailData } from './mutation/saveIndividual';
-import { saveRowData } from './mutation/saveRowData';
+import { saveDetailData } from './mutations/saveIndividual';
+import { saveRowData } from './mutations/saveRowData';
 import { ProductionTableBody } from './ProductionTableBody';
 import { ProductionTableHeader } from './ProductionTableHeader';
 
