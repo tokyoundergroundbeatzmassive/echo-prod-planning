@@ -12,7 +12,10 @@ interface ListEchoProdManagementsResponse {
     }
 }
 
-export const deleteProductionRecords = async (baseOrderNumber: string, processOptions: string) => {
+export const deleteProductionRecords = async (
+    baseOrderNumber: string,
+    processOptions: string
+): Promise<boolean> => {
     const client = generateClient();
 
     try {
